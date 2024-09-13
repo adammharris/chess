@@ -7,11 +7,14 @@ package chess;
  * signature of the existing methods.
  */
 public class ChessPosition {
-    private int currentRow;
-    private int currentCol;
+    final private int currentRow;
+    final private int currentCol;
     public ChessPosition(int row, int col) {
-        currentRow = row;
-        currentCol = col;
+        if (row > 8 || col > 8 || row < 1 || col < 1) {
+            throw new IllegalArgumentException("Position must be between 0 and 9");
+        }
+        this.currentRow = row;
+        this.currentCol = col;
     }
 
     /**
@@ -19,7 +22,7 @@ public class ChessPosition {
      * 1 codes for the bottom row
      */
     public int getRow() {
-        throw new RuntimeException("Not implemented");
+        return currentRow;
     }
 
     /**
@@ -27,6 +30,19 @@ public class ChessPosition {
      * 1 codes for the left row
      */
     public int getColumn() {
-        throw new RuntimeException("Not implemented");
+        return currentCol;
+    }
+
+    @Override
+    public int hashCode() {
+        return (Integer.toString(currentRow) + Integer.toString(currentCol)).hashCode();
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (this.getClass() != obj.getClass()) return false;
+        ChessPosition pos = (ChessPosition) obj;
+        return pos.getColumn() == this.getColumn() && pos.getRow() == this.getRow();
     }
 }
