@@ -9,6 +9,15 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessPiece {
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (this.getClass() != obj.getClass()) return false;
+        ChessPiece p = (ChessPiece) obj;
+        return p.getPieceType() == this.getPieceType() && p.getTeamColor() == this.getTeamColor();
+    }
+
     private PieceType type;
     private final ChessGame.TeamColor color;
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
