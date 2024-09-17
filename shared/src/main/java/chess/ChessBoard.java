@@ -18,7 +18,8 @@ public class ChessBoard {
         defaultBoard.put(new ChessPosition(1,4), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN));
         defaultBoard.put(new ChessPosition(1,5), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING));
         defaultBoard.put(new ChessPosition(1,6), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));
-        defaultBoard.put(new ChessPosition(1,7), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
+        defaultBoard.put(new ChessPosition(1,7), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT));
+        defaultBoard.put(new ChessPosition(1,8), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
         for (int i = 1; i < 9; i++) {
             defaultBoard.put(new ChessPosition(2,i), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
         }
@@ -32,7 +33,8 @@ public class ChessBoard {
         defaultBoard.put(new ChessPosition(8,4), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING));
         defaultBoard.put(new ChessPosition(8,5), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN));
         defaultBoard.put(new ChessPosition(8,6), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP));
-        defaultBoard.put(new ChessPosition(8,7), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
+        defaultBoard.put(new ChessPosition(8,7), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT));
+        defaultBoard.put(new ChessPosition(8,8), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
     }
     private HashMap<ChessPosition, ChessPiece> pieces = new HashMap<>();
 
@@ -74,12 +76,20 @@ public class ChessBoard {
         if (obj == null) return false;
         if (this.getClass() != obj.getClass()) return false;
         ChessBoard b = (ChessBoard) obj;
-        for (int i = 1; i < 9; i++) {
-            for (int j = 1; j < 9; j++) {
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
                 ChessPosition currentPosition = new ChessPosition(i,j);
-                if (!(b.getPiece(currentPosition).equals(this.getPiece(currentPosition)))) {
-                    System.out.println(currentPosition.toString() + " Piece: " + b.getPiece(currentPosition).toString());
-                    System.out.println(currentPosition.toString() + " Piece: " + this.getPiece(currentPosition).toString());
+                ChessPiece firstPiece = b.getPiece(currentPosition);
+                ChessPiece secondPiece = this.getPiece(currentPosition);
+                if (firstPiece == null || secondPiece == null) {
+                    if (firstPiece == null && secondPiece == null) {
+                        return true;
+                    }
+                    return false;
+                }
+                // System.out.println(currentPosition.toString() + " Piece: " + firstPiece.toString());
+                // System.out.println(currentPosition.toString() + " Piece: " + secondPiece.toString());
+                if (!(firstPiece.equals(secondPiece))) {
                     return false;
                 }
             }
