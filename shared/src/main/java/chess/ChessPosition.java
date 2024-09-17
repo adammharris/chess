@@ -9,6 +9,7 @@ package chess;
 public class ChessPosition {
     final private int currentRow;
     final private int currentCol;
+
     public ChessPosition(int row, int col) {
         if (row > 8 || col > 8 || row < 1 || col < 1) {
             throw new IllegalArgumentException("Position must be between 0 and 9");
@@ -44,5 +45,9 @@ public class ChessPosition {
         if (this.getClass() != obj.getClass()) return false;
         ChessPosition pos = (ChessPosition) obj;
         return pos.getColumn() == this.getColumn() && pos.getRow() == this.getRow();
+    }
+    @Override
+    public String toString() {
+        return "Row: " + currentRow + ", Col: " + currentCol;
     }
 }

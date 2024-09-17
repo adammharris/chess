@@ -9,17 +9,9 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessPiece {
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (this.getClass() != obj.getClass()) return false;
-        ChessPiece p = (ChessPiece) obj;
-        return p.getPieceType() == this.getPieceType() && p.getTeamColor() == this.getTeamColor();
-    }
-
     private PieceType type;
     private final ChessGame.TeamColor color;
+
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.color = pieceColor;
         this.type = type;
@@ -76,5 +68,38 @@ public class ChessPiece {
                 break;
         }
         return moves;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (this.getClass() != obj.getClass()) return false;
+        ChessPiece p = (ChessPiece) obj;
+        return p.getPieceType() == this.getPieceType() && p.getTeamColor() == this.getTeamColor();
+    }
+
+    @Override
+    public String toString() {
+        if (this.color == ChessGame.TeamColor.BLACK) {
+            return switch (this.type) {
+                case PieceType.KING -> "K";
+                case PieceType.QUEEN -> "Q";
+                case PieceType.BISHOP -> "B";
+                case PieceType.KNIGHT -> "N";
+                case PieceType.ROOK -> "R";
+                case PieceType.PAWN -> "P";
+            };
+        } else if (this.color == ChessGame.TeamColor.WHITE) {
+            return switch (this.type) {
+                case PieceType.KING -> "k";
+                case PieceType.QUEEN -> "q";
+                case PieceType.BISHOP -> "b";
+                case PieceType.KNIGHT -> "n";
+                case PieceType.ROOK -> "r";
+                case PieceType.PAWN -> "p";
+            };
+        }
+        return "";
     }
 }

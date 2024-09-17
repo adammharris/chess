@@ -76,8 +76,10 @@ public class ChessBoard {
         ChessBoard b = (ChessBoard) obj;
         for (int i = 1; i < 9; i++) {
             for (int j = 1; j < 9; j++) {
-                if (b.getPiece(new ChessPosition(i, j)) != this.getPiece(new ChessPosition(i, j))) {
-                    System.out.println(false);
+                ChessPosition currentPosition = new ChessPosition(i,j);
+                if (!(b.getPiece(currentPosition).equals(this.getPiece(currentPosition)))) {
+                    System.out.println(currentPosition.toString() + " Piece: " + b.getPiece(currentPosition).toString());
+                    System.out.println(currentPosition.toString() + " Piece: " + this.getPiece(currentPosition).toString());
                     return false;
                 }
             }
