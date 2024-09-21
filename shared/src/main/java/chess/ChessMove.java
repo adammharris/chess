@@ -10,11 +10,17 @@ public class ChessMove {
     private final ChessPosition start;
     private final ChessPosition end;
     private final ChessPiece.PieceType promotion;
-    public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
+    public ChessMove(ChessPosition start, ChessPosition end,
                      ChessPiece.PieceType promotionPiece) {
-        this.start = startPosition;
-        this.end = endPosition;
+        this.start = start;
+        this.end = end;
         this.promotion = promotionPiece;
+    }
+
+    public ChessMove(ChessPosition start, ChessPosition end) {
+        this.start = start;
+        this.end = end;
+        this.promotion = null;
     }
 
     /**
@@ -47,20 +53,25 @@ public class ChessMove {
         if (obj == null) return false;
         if (this.getClass() != obj.getClass()) return false;
         ChessMove m = (ChessMove) obj;
-        return this.start.equals(m.start)
-                && this.end.equals(m.end)
-                && this.promotion == m.promotion;
+        boolean isEqual = this.start.equals(m.start) && this.end.equals(m.end);
+        if (m.promotion == null && this.promotion != null
+                || m.promotion != null && this.promotion == null) {
+            return false;
+        } else if (m.promotion == null) return isEqual;
+        return isEqual && this.promotion.equals(m.promotion);
+    }
+
+    @Override
+    public String toString() {
+        String s = "%s -> %s".formatted(this.start.toString(), this.end.toString());
+        if (this.promotion != null) {
+            s = s + " (Promotion: %s)".formatted(this.promotion);
+        }
+        return s;
     }
 
     @Override
     public int hashCode() {
-        String moveStr = this.start.toString() + this.end.toString();
-        String promoStr;
-        if (this.promotion == null) {
-            promoStr = "";
-        } else {
-            promoStr = this.promotion.toString();
-        }
-        return ("%s%s".formatted(moveStr, promoStr)).hashCode();
+        return this.toString().hashCode();
     }
 }

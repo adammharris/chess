@@ -15,6 +15,14 @@ public class ChessPiece {
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.color = pieceColor;
         this.type = type;
+        switch (type) {
+            case ROOK:
+            case BISHOP:
+            case QUEEN:
+            case KING:
+            case PAWN:
+            case KNIGHT:
+        }
     }
 
     /**
@@ -50,24 +58,13 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        // Not done!!!
-        java.util.HashSet<ChessMove> moves = new java.util.HashSet<>();
-        switch (this.type) {
-            case PieceType.KING:
-                break;
-            case PieceType.QUEEN:
-                break;
-            case PieceType.BISHOP:
-                break;
-            case PieceType.KNIGHT:
-                break;
-            case PieceType.ROOK:
-                break;
-            case PieceType.PAWN:
-                break;
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
+        switch (this.getPieceType()) {
+            case ROOK:
+                RookMoveCalculator c = new RookMoveCalculator();
+                return c.pieceMoves(board, position);
         }
-        return moves;
+        return new java.util.HashSet<>();
     }
 
     @Override
@@ -76,9 +73,9 @@ public class ChessPiece {
         if (obj == null) return false;
         if (this.getClass() != obj.getClass()) return false;
         ChessPiece p = (ChessPiece) obj;
-        return p.getPieceType() == this.getPieceType() && p.getTeamColor() == this.getTeamColor();
+        //System.out.println("%s %s %s %s".formatted(p.getPieceType().toString(), this.getPieceType().toString(), p.getTeamColor().toString(), this.getTeamColor().toString()));
+        return (p.getPieceType() == this.getPieceType()) && (p.getTeamColor() == this.getTeamColor());
     }
-
     @Override
     public String toString() {
         if (this.color == ChessGame.TeamColor.BLACK) {

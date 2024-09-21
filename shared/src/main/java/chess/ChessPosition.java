@@ -36,7 +36,7 @@ public class ChessPosition {
 
     @Override
     public int hashCode() {
-        return (Integer.toString(currentRow) + Integer.toString(currentCol)).hashCode();
+        return "%s%s".formatted(currentRow, currentCol).hashCode();
     }
     @Override
     public boolean equals(Object obj) {
