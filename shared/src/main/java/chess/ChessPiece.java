@@ -61,8 +61,23 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
         switch (this.getPieceType()) {
             case ROOK:
-                RookMoveCalculator c = new RookMoveCalculator();
-                return c.pieceMoves(board, position);
+                RookMoveCalculator r = new RookMoveCalculator();
+                return r.pieceMoves(board, position);
+            case BISHOP:
+                BishopMoveCalculator b = new BishopMoveCalculator();
+                return b.pieceMoves(board, position);
+            case KING:
+                KingMoveCalculator k = new KingMoveCalculator();
+                return k.pieceMoves(board, position);
+            case QUEEN:
+                QueenMoveCalculator q = new QueenMoveCalculator();
+                return q.pieceMoves(board, position);
+            case KNIGHT:
+                KnightMoveCalculator n = new KnightMoveCalculator();
+                return n.pieceMoves(board, position);
+            case PAWN:
+                PawnMoveCalculator p = new PawnMoveCalculator();
+                return p.pieceMoves(board, position);
         }
         return new java.util.HashSet<>();
     }
