@@ -7,15 +7,12 @@ package chess;
  * signature of the existing methods.
  */
 public class ChessPosition {
-    final private int currentRow;
-    final private int currentCol;
-
+    private final int row;
+    private final int col;
     public ChessPosition(int row, int col) {
-        if (row > 8 || col > 8 || row < 1 || col < 1) {
-            throw new IllegalArgumentException("Position must be between 0 and 9");
-        }
-        this.currentRow = row;
-        this.currentCol = col;
+        if (row < 1 || row > 8 || col < 1 || col > 8) throw new RuntimeException("Out of bounds!");
+        this.row = row;
+        this.col = col;
     }
 
     /**
@@ -23,7 +20,7 @@ public class ChessPosition {
      * 1 codes for the bottom row
      */
     public int getRow() {
-        return currentRow;
+        return this.row;
     }
 
     /**
@@ -31,23 +28,25 @@ public class ChessPosition {
      * 1 codes for the left row
      */
     public int getColumn() {
-        return currentCol;
+        return this.col;
+    }
+
+    @Override
+    public String toString() {
+        return "Row: " + row + " Col: " + col;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null) return false;
+        if (this.getClass() != obj.getClass()) return false;
+        ChessPosition newPosition = (ChessPosition) obj;
+        return this.row == newPosition.getRow() && this.col == newPosition.getColumn();
     }
 
     @Override
     public int hashCode() {
-        return "%s%s".formatted(currentRow, currentCol).hashCode();
-    }
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (this.getClass() != obj.getClass()) return false;
-        ChessPosition pos = (ChessPosition) obj;
-        return pos.getColumn() == this.getColumn() && pos.getRow() == this.getRow();
-    }
-    @Override
-    public String toString() {
-        return "Row: " + currentRow + ", Col: " + currentCol;
+        return this.toString().hashCode();
     }
 }

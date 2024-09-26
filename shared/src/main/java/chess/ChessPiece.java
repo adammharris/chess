@@ -9,20 +9,11 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessPiece {
-    private PieceType type;
     private final ChessGame.TeamColor color;
-
+    private final ChessPiece.PieceType type;
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.color = pieceColor;
         this.type = type;
-        switch (type) {
-            case ROOK:
-            case BISHOP:
-            case QUEEN:
-            case KING:
-            case PAWN:
-            case KNIGHT:
-        }
     }
 
     /**
@@ -51,6 +42,29 @@ public class ChessPiece {
         return this.type;
     }
 
+    @Override
+    public String toString() {
+        if (this.color == ChessGame.TeamColor.WHITE) {
+            return switch (this.type) {
+                case KING -> "K";
+                case QUEEN -> "Q";
+                case BISHOP -> "B";
+                case KNIGHT -> "N";
+                case ROOK -> "R";
+                case PAWN -> "P";
+            };
+        }
+        return switch (this.type) {
+            case KING -> "k";
+            case QUEEN -> "q";
+            case BISHOP -> "b";
+            case KNIGHT -> "n";
+            case ROOK -> "r";
+            case PAWN -> "p";
+        };
+
+    }
+
     /**
      * Calculates all the positions a chess piece can move to
      * Does not take into account moves that are illegal due to leaving the king in
@@ -58,60 +72,34 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
-        switch (this.getPieceType()) {
-            case ROOK:
-                RookMoveCalculator r = new RookMoveCalculator();
-                return r.pieceMoves(board, position);
-            case BISHOP:
-                BishopMoveCalculator b = new BishopMoveCalculator();
-                return b.pieceMoves(board, position);
-            case KING:
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        ChessPiece.PieceType currentPiece = board.getPiece(myPosition).getPieceType();
+        //HashSet<ChessMove> moves = new HashSet<>();
+        return switch (currentPiece) {
+            case KING -> {
                 KingMoveCalculator k = new KingMoveCalculator();
-                return k.pieceMoves(board, position);
-            case QUEEN:
+                yield k.pieceMoves(board, myPosition);
+            }
+            case QUEEN -> {
                 QueenMoveCalculator q = new QueenMoveCalculator();
-                return q.pieceMoves(board, position);
-            case KNIGHT:
+                yield q.pieceMoves(board, myPosition);
+            }
+            case BISHOP -> {
+                BishopMoveCalculator b = new BishopMoveCalculator();
+                yield b.pieceMoves(board, myPosition);
+            }
+            case KNIGHT -> {
                 KnightMoveCalculator n = new KnightMoveCalculator();
-                return n.pieceMoves(board, position);
-            case PAWN:
+                yield n.pieceMoves(board, myPosition);
+            }
+            case ROOK -> {
+                RookMoveCalculator r = new RookMoveCalculator();
+                yield r.pieceMoves(board, myPosition);
+            }
+            case PAWN -> {
                 PawnMoveCalculator p = new PawnMoveCalculator();
-                return p.pieceMoves(board, position);
-        }
-        return new java.util.HashSet<>();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (this.getClass() != obj.getClass()) return false;
-        ChessPiece p = (ChessPiece) obj;
-        //System.out.println("%s %s %s %s".formatted(p.getPieceType().toString(), this.getPieceType().toString(), p.getTeamColor().toString(), this.getTeamColor().toString()));
-        return (p.getPieceType() == this.getPieceType()) && (p.getTeamColor() == this.getTeamColor());
-    }
-    @Override
-    public String toString() {
-        if (this.color == ChessGame.TeamColor.BLACK) {
-            return switch (this.type) {
-                case PieceType.KING -> "K";
-                case PieceType.QUEEN -> "Q";
-                case PieceType.BISHOP -> "B";
-                case PieceType.KNIGHT -> "N";
-                case PieceType.ROOK -> "R";
-                case PieceType.PAWN -> "P";
-            };
-        } else if (this.color == ChessGame.TeamColor.WHITE) {
-            return switch (this.type) {
-                case PieceType.KING -> "k";
-                case PieceType.QUEEN -> "q";
-                case PieceType.BISHOP -> "b";
-                case PieceType.KNIGHT -> "n";
-                case PieceType.ROOK -> "r";
-                case PieceType.PAWN -> "p";
-            };
-        }
-        return "";
+                yield p.pieceMoves(board, myPosition);
+            }
+        };
     }
 }

@@ -3,95 +3,65 @@ package chess;
 import java.util.Collection;
 import java.util.HashSet;
 
-public class RookMoveCalculator extends PieceMovesCalculator {
-
-    private enum direction {
+public class RookMoveCalculator implements PieceMoveCalculator {
+    @Override
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        HashSet<ChessMove> moves = new HashSet<>();
+        calculateRow(board, myPosition, moves, direction.UP);
+        calculateRow(board, myPosition, moves, direction.DOWN);
+        calculateRow(board, myPosition, moves, direction.LEFT);
+        calculateRow(board, myPosition, moves, direction.RIGHT);
+        return moves;
+    }
+    public enum direction {
         UP,
         DOWN,
         LEFT,
         RIGHT
     }
-
-    @Override
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
-        HashSet<ChessMove> moves = new HashSet<>();
-        addRowMoves(board, position, moves, direction.LEFT);
-        addRowMoves(board, position, moves, direction.RIGHT);
-        addRowMoves(board, position, moves, direction.UP);
-        addRowMoves(board, position, moves, direction.DOWN);
-        return moves;
-    }
-
-    private void addRowMoves(ChessBoard board, ChessPosition position, HashSet<ChessMove> moves, direction d) {
-        int loopRow = position.getRow();
-        int loopCol = position.getColumn();
-        ChessGame.TeamColor thisColor = board.getPiece(position).getTeamColor();
-        //Todo: less duplicated code
-        switch (d) {
-            case direction.LEFT:
-                do {
-                    loopRow--;
-                    if (loopRow < 1) continue;
-                    ChessPosition newPosition = new ChessPosition(loopRow, loopCol);
-                    ChessPiece pieceOnNewPosition = board.getPiece(newPosition);
-                    if (pieceOnNewPosition != null) {
-                        ChessGame.TeamColor thatColor = pieceOnNewPosition.getTeamColor();
-                        if (thisColor == thatColor) break;
-                        moves.add(new ChessMove(position, newPosition));
-                        break;
-                    } else {
-                        moves.add(new ChessMove(position, newPosition));
-                    }
-                } while (loopRow >= 1);
+    private void calculateRow(ChessBoard board, ChessPosition position, HashSet<ChessMove> moves, direction dir) {
+        switch (dir) {
+            case UP:
+                for (int i = position.getRow() + 1; i <= 8; i++) {
+                    ChessPosition newPos = new ChessPosition(i, position.getColumn());
+                    boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
+                    if (foundPiece) break;
+                }
                 break;
-            case direction.RIGHT:
-                do {
-                    loopRow++;
-                    if (loopRow > 8) continue;
-                    ChessPosition newPosition = new ChessPosition(loopRow, loopCol);
-                    ChessPiece pieceOnNewPosition = board.getPiece(newPosition);
-                    if (pieceOnNewPosition != null) {
-                        ChessGame.TeamColor thatColor = pieceOnNewPosition.getTeamColor();
-                        if (thisColor == thatColor) break;
-                        moves.add(new ChessMove(position, newPosition));
-                        break;
-                    } else {
-                        moves.add(new ChessMove(position, newPosition));
-                    }
-                } while (loopRow <= 8);
+            case DOWN:
+                for (int i = position.getRow() - 1; i >= 1; i--) {
+                    ChessPosition newPos = new ChessPosition(i, position.getColumn());
+                    boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
+                    if (foundPiece) break;
+                }
                 break;
-            case direction.UP:
-                do {
-                    loopCol++;
-                    if (loopCol > 8) continue;
-                    ChessPosition newPosition = new ChessPosition(loopRow, loopCol);
-                    ChessPiece pieceOnNewPosition = board.getPiece(newPosition);
-                    if (pieceOnNewPosition != null) {
-                        ChessGame.TeamColor thatColor = pieceOnNewPosition.getTeamColor();
-                        if (thisColor == thatColor) break;
-                        moves.add(new ChessMove(position, newPosition));
-                        break;
-                    } else {
-                        moves.add(new ChessMove(position, newPosition));
-                    }
-                } while (loopCol <= 8);
+            case LEFT:
+                for (int i = position.getColumn() - 1; i >= 1; i--) {
+                    ChessPosition newPos = new ChessPosition(position.getRow(), i);
+                    boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
+                    if (foundPiece) break;
+                }
                 break;
-            case direction.DOWN:
-                do {
-                    loopCol--;
-                    if (loopCol < 1) continue;
-                    ChessPosition newPosition = new ChessPosition(loopRow, loopCol);
-                    ChessPiece pieceOnNewPosition = board.getPiece(newPosition);
-                    if (pieceOnNewPosition != null) {
-                        ChessGame.TeamColor thatColor = pieceOnNewPosition.getTeamColor();
-                        if (thisColor == thatColor) break;
-                        moves.add(new ChessMove(position, newPosition));
-                        break;
-                    } else {
-                        moves.add(new ChessMove(position, newPosition));
-                    }
-                } while (loopCol >= 1);
+            case RIGHT:
+                for (int i = position.getColumn() + 1; i <= 8; i++) {
+                    ChessPosition newPos = new ChessPosition(position.getRow(), i);
+                    boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
+                    if (foundPiece) break;
+                }
                 break;
         }
+
+    }
+    private boolean addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, ChessPosition newPos) {
+        ChessPiece atPos = board.getPiece(newPos);
+        if (atPos != null) {
+            if (atPos.getTeamColor() != board.getPiece(position).getTeamColor()) {
+                moves.add(new ChessMove(position, newPos));
+            }
+            return true;
+        } else {
+            moves.add(new ChessMove(position, newPos));
+        }
+        return false;
     }
 }

@@ -3,38 +3,33 @@ package chess;
 import java.util.Collection;
 import java.util.HashSet;
 
-public class KingMoveCalculator extends PieceMovesCalculator {
+public class KingMoveCalculator implements PieceMoveCalculator {
     @Override
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         HashSet<ChessMove> moves = new HashSet<>();
-        HashSet<ChessPosition> around = new HashSet<>();
-        /*  1,-1|1,0 |1,1
-            0,-1| K  |0,1
-           -1,-1|-1,0|-1,1  */
-        HashSet<ChessPosition> aroundWithInvalidSpaces = new HashSet<>();
-        aroundWithInvalidSpaces.add(translate(position, 0, 1)); // 1 (0,1)
-        aroundWithInvalidSpaces.add(translate(position, 1, 1)); // 2 (1,1)
-        aroundWithInvalidSpaces.add(translate(position, 1, 0)); // 3 (1,0)
-        aroundWithInvalidSpaces.add(translate(position, 1, -1)); // 4 (1,-1)
-        aroundWithInvalidSpaces.add(translate(position, 0, -1)); // 5 (0,-1)
-        aroundWithInvalidSpaces.add(translate(position, -1, -1)); // 6 (-1,-1)
-        aroundWithInvalidSpaces.add(translate(position, -1, 0)); // 7 (-1,0)
-        aroundWithInvalidSpaces.add(translate(position, -1, 1)); // 8 (-1,1)
-        for (ChessPosition i : aroundWithInvalidSpaces) {
-            if (i != null) around.add(i);
-        }
-
-        for (ChessPosition i : around) {
-            addIfPieceIsNotFriendly(board, position, i, moves);
-        }
+        addMoveIfValid(board, moves, myPosition, 0, -1);
+        addMoveIfValid(board, moves, myPosition, 0, 1);
+        addMoveIfValid(board, moves, myPosition, -1, 0);
+        addMoveIfValid(board, moves, myPosition, -1, -1);
+        addMoveIfValid(board, moves, myPosition, -1, 1);
+        addMoveIfValid(board, moves, myPosition, 1, 0);
+        addMoveIfValid(board, moves, myPosition, 1, -1);
+        addMoveIfValid(board, moves, myPosition, 1, 1);
         return moves;
     }
-    private ChessPosition translate(ChessPosition pos, int row, int col) {
-        int newRow = pos.getRow() + row;
-        int newCol = pos.getColumn() + col;
-        if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) {
-            return null;
+
+    private void addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow, int addCol) {
+        int newRow = position.getRow() + addRow;
+        int newCol = position.getColumn() + addCol;
+        if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) return;
+        ChessPosition newPos = new ChessPosition(newRow, newCol);
+        ChessPiece atPos = board.getPiece(newPos);
+        if (atPos != null) {
+            if (atPos.getTeamColor() != board.getPiece(position).getTeamColor()) {
+                moves.add(new ChessMove(position, newPos));
+            }
+        } else {
+            moves.add(new ChessMove(position, newPos));
         }
-        return new ChessPosition(newRow, newCol);
     }
 }

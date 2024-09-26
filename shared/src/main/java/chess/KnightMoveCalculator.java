@@ -3,46 +3,39 @@ package chess;
 import java.util.Collection;
 import java.util.HashSet;
 
-public class KnightMoveCalculator extends PieceMovesCalculator {
+public class KnightMoveCalculator implements PieceMoveCalculator {
     @Override
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
-        /*
-          | |8| |1| |
-          |7| | | |2|
-          | | |N| | |
-          |6| | | |3|
-          | |5| |4| |
-         */
-        HashSet<ChessPosition> possiblePositions = new HashSet<>();
-        int row = position.getRow();
-        int col = position.getColumn();
-        row += 2; col += 1;
-        addIfWithinBounds(row, col, possiblePositions); // 1
-        row -= 1; col += 1;
-        addIfWithinBounds(row, col, possiblePositions); // 2
-        row -= 2;
-        addIfWithinBounds(row, col, possiblePositions); // 3
-        row -= 1; col -= 1;
-        addIfWithinBounds(row, col, possiblePositions); // 4
-        col -= 2;
-        addIfWithinBounds(row, col, possiblePositions); // 5
-        row += 1; col -= 1;
-        addIfWithinBounds(row, col, possiblePositions); // 6
-        row += 2;
-        addIfWithinBounds(row, col, possiblePositions);
-        row += 1; col += 1;
-        addIfWithinBounds(row, col, possiblePositions);
-
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         HashSet<ChessMove> moves = new HashSet<>();
-        for (ChessPosition newPosition : possiblePositions) {
-            addIfPieceIsNotFriendly(board, position, newPosition, moves);
-        }
+        /*
+        | |8| |1| |
+        |7| | | |2|
+        | | |N| | |
+        |6| | | |3|
+        | |5| |4| |
+         */
+        addMoveIfValid(board, moves, myPosition, 2, 1);
+        addMoveIfValid(board, moves, myPosition, 1, 2);
+        addMoveIfValid(board, moves, myPosition, -1, 2);
+        addMoveIfValid(board, moves, myPosition, -2, 1);
+        addMoveIfValid(board, moves, myPosition, -2, -1);
+        addMoveIfValid(board, moves, myPosition, -1, -2);
+        addMoveIfValid(board, moves, myPosition, 1, -2);
+        addMoveIfValid(board, moves, myPosition, 2, -1);
         return moves;
     }
-
-    private void addIfWithinBounds(int row, int col, HashSet<ChessPosition> positions) {
-        if (row >= 1 && row <= 8 && col >= 1 && col <= 8) {
-            positions.add(new ChessPosition(row, col));
+    private void addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow, int addCol) {
+        int newRow = position.getRow() + addRow;
+        int newCol = position.getColumn() + addCol;
+        if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) return;
+        ChessPosition newPos = new ChessPosition(newRow, newCol);
+        ChessPiece atPos = board.getPiece(newPos);
+        if (atPos != null) {
+            if (atPos.getTeamColor() != board.getPiece(position).getTeamColor()) {
+                moves.add(new ChessMove(position, newPos));
+            }
+        } else {
+            moves.add(new ChessMove(position, newPos));
         }
     }
 }

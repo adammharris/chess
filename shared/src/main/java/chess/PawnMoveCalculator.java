@@ -3,74 +3,66 @@ package chess;
 import java.util.Collection;
 import java.util.HashSet;
 
-public class PawnMoveCalculator extends PieceMovesCalculator {
+public class PawnMoveCalculator implements PieceMoveCalculator {
     @Override
-    Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         HashSet<ChessMove> moves = new HashSet<>();
-        addAttack(board, position, moves);
-        addAdvance(board, position, moves);
+        ChessPiece thisPiece = board.getPiece(myPosition);
+        if (thisPiece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            boolean canAdvance = addMoveIfValid(board, moves, myPosition, 1, 0); // regular advance
+            if (myPosition.getRow() == 2 && canAdvance) {
+                addMoveIfValid(board, moves, myPosition, 2, 0); // first double advance
+            }
+            addIfAttackable(board, moves, myPosition, 1, 1);
+            addIfAttackable(board, moves, myPosition, 1, -1);
+        } else {
+            boolean canAdvance = addMoveIfValid(board, moves, myPosition, -1, 0);
+            if (myPosition.getRow() == 7 && canAdvance) {
+                addMoveIfValid(board, moves, myPosition, -2, 0);
+            }
+            addIfAttackable(board, moves, myPosition, -1, 1);
+            addIfAttackable(board, moves, myPosition, -1, -1);
+        }
         return moves;
     }
-
-    private void addAttack(ChessBoard board, ChessPosition position, HashSet<ChessMove> moves) {
-        ChessGame.TeamColor thisColor = board.getPiece(position).getTeamColor();
-        int row = position.getRow();
-        int col = position.getColumn();
-        ChessPosition attack1 = null;
-        ChessPosition attack2 = null;
-        if (thisColor == ChessGame.TeamColor.WHITE) {
-            row++; col--;
-            if (row > 8 || row < 1 || col > 8 || col < 1) {
-                attack1 = new ChessPosition(row, col);
-            }
-            col += 2;
-            if (row > 8 || row < 1 || col > 8 || col < 1) {
-                attack2 = new ChessPosition(row, col);
-            }
-        } else {
-            row--; col--;
-            if (row > 8 || row < 1 || col > 8 || col < 1) {
-                attack1 = new ChessPosition(row, col);
-            }
-            col += 2;
-            if (row > 8 || row < 1 || col > 8 || col < 1) {
-                attack2 = new ChessPosition(row, col);
-            }
+    private boolean addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow, int addCol) {
+        int newRow = position.getRow() + addRow;
+        int newCol = position.getColumn() + addCol;
+        if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) return false;
+        ChessPosition newPos = new ChessPosition(newRow, newCol);
+        ChessPiece atPos = board.getPiece(newPos);
+        if (atPos == null) {
+            addPossiblePromotions(board, moves, position, newPos);
+            return true;
         }
-        if (attack1 != null) {
-            ChessPiece potentialAttack = board.getPiece(attack1);
-            if (potentialAttack != null) {
-                if (thisColor != potentialAttack.getTeamColor()) {
-                    moves.add(new ChessMove(position, new ChessPosition(row, col)));
-                }
-            }
-        }
-        if (attack2 != null) {
-            ChessPiece potentialAttack = board.getPiece(attack2);
-            if (potentialAttack != null) {
-                if (thisColor != potentialAttack.getTeamColor()) {
-                    moves.add(new ChessMove(position, new ChessPosition(row, col)));
-                }
+        return false;
+    }
+    private void addIfAttackable(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow, int addCol) {
+        int newRow = position.getRow() + addRow;
+        int newCol = position.getColumn() + addCol;
+        if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) return;
+        ChessPosition newPos = new ChessPosition(newRow, newCol);
+        ChessPiece atPos = board.getPiece(newPos);
+        if (atPos != null) {
+            if (atPos.getTeamColor() != board.getPiece(position).getTeamColor()) {
+                addPossiblePromotions(board, moves, position, newPos);
             }
         }
     }
-    private boolean addAdvance(ChessBoard board, ChessPosition position, HashSet<ChessMove> moves) {
-        int row = position.getRow();
-        ChessGame.TeamColor thisColor = board.getPiece(position).getTeamColor();
-        if (thisColor == ChessGame.TeamColor.WHITE) {
-            row++;
-            if (row < 8) return false;
-            ChessPosition newPosition = new ChessPosition(row, position.getColumn());
-            if (board.getPiece(newPosition) != null) return false;
-            moves.add(new ChessMove(position, newPosition));
-            return true;
+
+    private void addPossiblePromotions(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, ChessPosition newPos) {
+        ChessGame.TeamColor myColor = board.getPiece(position).getTeamColor();
+        boolean promotable = (
+                (myColor == ChessGame.TeamColor.WHITE && newPos.getRow() == 8)
+                        || (myColor == ChessGame.TeamColor.BLACK && newPos.getRow() == 1)
+        );
+        if (promotable) {
+            moves.add(new ChessMove(position, newPos, ChessPiece.PieceType.QUEEN));
+            moves.add(new ChessMove(position, newPos, ChessPiece.PieceType.BISHOP));
+            moves.add(new ChessMove(position, newPos, ChessPiece.PieceType.KNIGHT));
+            moves.add(new ChessMove(position, newPos, ChessPiece.PieceType.ROOK));
         } else {
-            row--;
-            if (row < 2) return false;
-            ChessPosition newPosition = new ChessPosition(row, position.getColumn());
-            if (board.getPiece(newPosition) != null) return false;
-            moves.add(new ChessMove(position, newPosition));
-            return true;
+            moves.add(new ChessMove(position, newPos));
         }
     }
 }

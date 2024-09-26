@@ -1,15 +1,18 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
 
-public class QueenMoveCalculator extends PieceMovesCalculator {
+public class QueenMoveCalculator implements PieceMoveCalculator {
     @Override
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition position) {
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         RookMoveCalculator r = new RookMoveCalculator();
-        Collection<ChessMove> moves1 = r.pieceMoves(board, position);
         BishopMoveCalculator b = new BishopMoveCalculator();
-        Collection<ChessMove> moves2 = b.pieceMoves(board, position);
-        moves1.addAll(moves2);
-        return moves1;
+        Collection<ChessMove> rookMoves = r.pieceMoves(board, myPosition);
+        Collection<ChessMove> bishopMoves = b.pieceMoves(board, myPosition);
+        HashSet<ChessMove> moves = new HashSet<>();
+        moves.addAll(rookMoves);
+        moves.addAll(bishopMoves);
+        return moves;
     }
 }
