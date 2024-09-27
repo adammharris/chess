@@ -9,16 +9,20 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
-
+    public int turnNum = 0;
+    private TeamColor currentTurn = TeamColor.WHITE;
+    private ChessBoard board = new ChessBoard();
+    ChessPosition kingPos;
     public ChessGame() {
-
+        board.resetBoard();
+        kingPos = board.getPosition(currentTurn, ChessPiece.PieceType.KING);
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return currentTurn;
     }
 
     /**
@@ -27,7 +31,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        currentTurn = team;
     }
 
     /**
@@ -46,7 +50,17 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> moves = board.getPiece(startPosition).pieceMoves(board, startPosition);
+        /* A move is illegal if:
+            1. the chess piece cannot move there, (check done in pieceMoves)
+            3. if it’s not the corresponding team's turn, or
+            2. if the move leaves the team’s king in danger.
+         */
+        boolean notTeamsTurn = board.getPiece(startPosition).getTeamColor() == currentTurn;
+        boolean kingWillBeEndangered = isInCheck(currentTurn); //TODO: check future instead of present
+
+        moves.removeIf(move -> !(notTeamsTurn || kingWillBeEndangered));
+        return moves;
     }
 
     /**
@@ -56,7 +70,9 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPiece movingPiece = board.getPiece(move.getStartPosition());
+        board.getPieces().remove(move.getStartPosition());
+        board.getPieces().put(move.getStartPosition(), movingPiece);
     }
 
     /**
@@ -66,7 +82,15 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        java.util.HashMap<ChessPosition, ChessPiece> pieces = board.getPieces();
+        kingPos = board.getPosition(teamColor, ChessPiece.PieceType.KING);
+        for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
+            Collection<ChessMove> moves = piece.getValue().pieceMoves(board, piece.getKey());
+            for (ChessMove move : moves) {
+                if (move.getEndPosition().equals(kingPos)) return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -96,7 +120,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        this.board = board;
     }
 
     /**
@@ -105,6 +129,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
     }
 }

@@ -38,11 +38,11 @@ public class ChessMove {
 
     @Override
     public String toString() {
-        String moveString;
+        String moveString = "";
         if (promotion != null) {
-            moveString = "Start: (%s), End: (%s), Promo: %s".formatted(start.toString(), end.toString(), promotion);
+            moveString = "Start: (%s), End: (%s), Promo: %s".formatted(start, end, promotion);
         } else {
-            moveString = "Start: (%s), End: (%s)".formatted(start.toString(), end.toString());
+            moveString = "Start: (%s), End: (%s)".formatted(start, end);
         }
         return moveString;
     }

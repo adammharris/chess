@@ -62,6 +62,15 @@ public class ChessBoard {
         return pieces.get(position);
     }
 
+    public ChessPosition getPosition(ChessGame.TeamColor color, ChessPiece.PieceType type) {
+        for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
+            if (piece.getValue().getTeamColor() == color) {
+                if (piece.getValue().getPieceType() == type) return piece.getKey();
+            }
+        }
+        return null;
+    }
+
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
@@ -102,5 +111,9 @@ public class ChessBoard {
         if (this.getClass() != obj.getClass()) return false;
         ChessBoard newBoard = (ChessBoard) obj;
         return this.hashCode() ==  newBoard.hashCode();
+    }
+
+    public HashMap<ChessPosition, ChessPiece> getPieces() {
+        return pieces;
     }
 }

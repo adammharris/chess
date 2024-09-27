@@ -9,25 +9,25 @@ public class PawnMoveCalculator implements PieceMoveCalculator {
         HashSet<ChessMove> moves = new HashSet<>();
         ChessPiece thisPiece = board.getPiece(myPosition);
         if (thisPiece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-            boolean canAdvance = addMoveIfValid(board, moves, myPosition, 1, 0); // regular advance
+            boolean canAdvance = addMoveIfValid(board, moves, myPosition, 1); // regular advance
             if (myPosition.getRow() == 2 && canAdvance) {
-                addMoveIfValid(board, moves, myPosition, 2, 0); // first double advance
+                addMoveIfValid(board, moves, myPosition, 2); // first double advance
             }
             addIfAttackable(board, moves, myPosition, 1, 1);
             addIfAttackable(board, moves, myPosition, 1, -1);
         } else {
-            boolean canAdvance = addMoveIfValid(board, moves, myPosition, -1, 0);
+            boolean canAdvance = addMoveIfValid(board, moves, myPosition, -1);
             if (myPosition.getRow() == 7 && canAdvance) {
-                addMoveIfValid(board, moves, myPosition, -2, 0);
+                addMoveIfValid(board, moves, myPosition, -2);
             }
             addIfAttackable(board, moves, myPosition, -1, 1);
             addIfAttackable(board, moves, myPosition, -1, -1);
         }
         return moves;
     }
-    private boolean addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow, int addCol) {
+    private boolean addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow) {
         int newRow = position.getRow() + addRow;
-        int newCol = position.getColumn() + addCol;
+        int newCol = position.getColumn();
         if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) return false;
         ChessPosition newPos = new ChessPosition(newRow, newCol);
         ChessPiece atPos = board.getPiece(newPos);
