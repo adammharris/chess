@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -43,6 +44,17 @@ public class ChessGame {
     }
 
     /**
+     *  Returns the opposite color
+     * @param c Color to be opposed
+     * @return Opposite color from c
+     */
+    public static TeamColor oppositeColor(TeamColor c) {
+        if (c == TeamColor.BLACK) {
+            return TeamColor.WHITE;
+        } else return TeamColor.BLACK;
+    }
+
+    /**
      * Gets a valid moves for a piece at the given location
      *
      * @param startPosition the piece to get valid moves for
@@ -56,10 +68,23 @@ public class ChessGame {
             3. if it’s not the corresponding team's turn, or
             2. if the move leaves the team’s king in danger.
          */
-        boolean notTeamsTurn = board.getPiece(startPosition).getTeamColor() == currentTurn;
-        boolean kingWillBeEndangered = isInCheck(currentTurn); //TODO: check future instead of present
+        TeamColor myTeamColor = board.getPiece(startPosition).getTeamColor();
+        if (myTeamColor != currentTurn) {
+            moves.clear();
+            return moves;
+        }
+        boolean beforeInCheck = isInCheck(myTeamColor, this.board);
+        Iterator<ChessMove> iterator = moves.iterator();
+        while (iterator.hasNext()) {
+            ChessMove move = iterator.next();
+            ChessBoard simulateCheck = new ChessBoard(board);
+            simulateCheck.movePiece(move.getStartPosition(), move.getEndPosition());
+            boolean afterInCheck = isInCheck(myTeamColor, simulateCheck);
+            if (afterInCheck) iterator.remove();
 
-        moves.removeIf(move -> !(notTeamsTurn || kingWillBeEndangered));
+        }
+
+
         return moves;
     }
 
@@ -72,9 +97,27 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         /*
         1. Check if piece is not occupied by a piece of the same team (unless castling)
-        2. Check if my team is not in check, which would prevent all moves that
+        2. Check if my team is in check. If so, only allow moves that protect the king
+        3.
          */
-        board.movePiece(move.getStartPosition(), move.getEndPosition());
+
+        ChessPiece attackedPiece = board.getPiece(move.getEndPosition());
+        TeamColor myTeamColor = board.getPiece(move.getStartPosition()).getTeamColor();
+
+        if (attackedPiece != null) {
+            if (attackedPiece.getTeamColor() == myTeamColor) {
+                throw new InvalidMoveException("Move ends on piece of same color");
+            }
+        }
+
+        boolean beforeInCheck = isInCheck(myTeamColor, this.board);
+        ChessBoard simulateCheck = new ChessBoard(board);
+        simulateCheck.movePiece(move.getStartPosition(), move.getEndPosition());
+        boolean afterInCheck = isInCheck(myTeamColor, simulateCheck);
+        if (beforeInCheck && !afterInCheck) throw new InvalidMoveException("King is in check");
+
+
+
     }
 
     /**
@@ -85,8 +128,22 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         java.util.HashMap<ChessPosition, ChessPiece> pieces = board.getPieces();
-        kingPos = board.getPosition(teamColor, ChessPiece.PieceType.KING);
+        ChessPosition kingPos = board.getPosition(teamColor, ChessPiece.PieceType.KING);
         for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
+            if (piece.getValue().getTeamColor() == teamColor) continue;
+            Collection<ChessMove> moves = piece.getValue().pieceMoves(board, piece.getKey());
+            for (ChessMove move : moves) {
+                if (move.getEndPosition().equals(kingPos)) return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isInCheck(TeamColor teamColor, ChessBoard board) {
+        java.util.HashMap<ChessPosition, ChessPiece> pieces = board.getPieces();
+        ChessPosition kingPos = board.getPosition(teamColor, ChessPiece.PieceType.KING);
+        for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
+            if (piece.getValue().getTeamColor() == teamColor) continue;
             Collection<ChessMove> moves = piece.getValue().pieceMoves(board, piece.getKey());
             for (ChessMove move : moves) {
                 if (move.getEndPosition().equals(kingPos)) return true;

@@ -14,6 +14,13 @@ public class ChessBoard {
             defineDefault();
         }
     }
+
+    // Used to simulate moves
+    public ChessBoard(ChessBoard board) {
+        this.pieces.putAll(board.getPieces());
+    }
+
+
     private void defineDefault() {
         defaultBoard.put(new ChessPosition(1,1), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
         defaultBoard.put(new ChessPosition(1,2), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT));
