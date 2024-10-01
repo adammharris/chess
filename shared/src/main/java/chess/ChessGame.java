@@ -63,17 +63,7 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         Collection<ChessMove> moves = board.getPiece(startPosition).pieceMoves(board, startPosition);
-        /* A move is illegal if:
-            1. the chess piece cannot move there, (check done in pieceMoves)
-            3. if it’s not the corresponding team's turn, or
-            2. if the move leaves the team’s king in danger.
-         */
         TeamColor myTeamColor = board.getPiece(startPosition).getTeamColor();
-        if (myTeamColor != currentTurn) {
-            moves.clear();
-            return moves;
-        }
-        boolean beforeInCheck = isInCheck(myTeamColor, this.board);
         Iterator<ChessMove> iterator = moves.iterator();
         while (iterator.hasNext()) {
             ChessMove move = iterator.next();
@@ -81,10 +71,7 @@ public class ChessGame {
             simulateCheck.movePiece(move.getStartPosition(), move.getEndPosition());
             boolean afterInCheck = isInCheck(myTeamColor, simulateCheck);
             if (afterInCheck) iterator.remove();
-
         }
-
-
         return moves;
     }
 
@@ -115,9 +102,6 @@ public class ChessGame {
         simulateCheck.movePiece(move.getStartPosition(), move.getEndPosition());
         boolean afterInCheck = isInCheck(myTeamColor, simulateCheck);
         if (beforeInCheck && !afterInCheck) throw new InvalidMoveException("King is in check");
-
-
-
     }
 
     /**
