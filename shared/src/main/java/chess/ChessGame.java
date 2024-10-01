@@ -64,15 +64,17 @@ public class ChessGame {
     }
 
     /**
-     * Makes a move in a chess game
+     * Makes a move in a chess game. Checks if move is valid.
      *
      * @param move chess move to preform
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        ChessPiece movingPiece = board.getPiece(move.getStartPosition());
-        board.getPieces().remove(move.getStartPosition());
-        board.getPieces().put(move.getStartPosition(), movingPiece);
+        /*
+        1. Check if piece is not occupied by a piece of the same team (unless castling)
+        2. Check if my team is not in check, which would prevent all moves that
+         */
+        board.movePiece(move.getStartPosition(), move.getEndPosition());
     }
 
     /**

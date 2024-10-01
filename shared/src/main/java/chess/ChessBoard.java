@@ -46,9 +46,10 @@ public class ChessBoard {
      *
      * @param position where to add the piece to
      * @param piece    the piece to add
+     * @return previous ChessPiece as returned by HashMap.put
      */
-    public void addPiece(ChessPosition position, ChessPiece piece) {
-        pieces.put(position, piece);
+    public ChessPiece addPiece(ChessPosition position, ChessPiece piece) {
+        return pieces.put(position, piece);
     }
 
     /**
@@ -62,6 +63,31 @@ public class ChessBoard {
         return pieces.get(position);
     }
 
+    /**
+     * Removes a chess piece from the chess board
+     *
+     * @param position position of piece to be removed
+     * @return ChessPiece piece that is removed, as returned by HashMap<>.remove()
+     */
+    public ChessPiece removePiece(ChessPosition position) {
+        return pieces.remove(position);
+    }
+    /**
+     * Moves a chess piece from one position to another
+     *
+     * @param oldPos Original position of chess piece to be moved. Uses getPiece
+     * @param newPos New position of chess piece to be moved. Uses removePiece and addPiece
+     */
+    public ChessPiece movePiece(ChessPosition oldPos, ChessPosition newPos) {
+        return addPiece(newPos, removePiece(oldPos));
+    }
+
+    /**
+     * Gets chess piece position based on color and type. Used for getting king in checking for check
+     * @param color Color of chess piece to get
+     * @param type Type of chess piece to get.
+     * @return First piece found of color and type given
+     */
     public ChessPosition getPosition(ChessGame.TeamColor color, ChessPiece.PieceType type) {
         for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
             if (piece.getValue().getTeamColor() == color) {
