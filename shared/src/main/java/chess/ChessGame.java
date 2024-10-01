@@ -77,21 +77,19 @@ public class ChessGame {
         2. Check if my team is in check. If so, only allow moves that protect the king
         3.
          */
-
-        ChessPiece attackedPiece = board.getPiece(move.getEndPosition());
-        TeamColor myTeamColor = board.getPiece(move.getStartPosition()).getTeamColor();
-
-        if (attackedPiece != null) {
-            if (attackedPiece.getTeamColor() == myTeamColor) {
-                throw new InvalidMoveException("Move ends on piece of same color");
+        Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
+        boolean moveIsInValidMoves = false;
+        for (ChessMove vm : validMoves) {
+            if (move.equals(vm)) {
+                moveIsInValidMoves = true;
+                break;
             }
         }
-
-        boolean beforeInCheck = isInCheck(myTeamColor, this.board);
-        ChessBoard simulateCheck = new ChessBoard(board);
-        simulateCheck.movePiece(move.getStartPosition(), move.getEndPosition());
-        boolean afterInCheck = isInCheck(myTeamColor, simulateCheck);
-        if (beforeInCheck && !afterInCheck) throw new InvalidMoveException("King is in check");
+        if (moveIsInValidMoves) {
+            board.movePiece(move.getStartPosition(), move.getEndPosition());
+        } else {
+            throw new InvalidMoveException();
+        }
     }
 
     /**
