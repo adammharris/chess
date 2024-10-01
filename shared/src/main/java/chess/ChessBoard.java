@@ -89,6 +89,18 @@ public class ChessBoard {
         return addPiece(newPos, removePiece(oldPos));
     }
 
+    public void executeMove(ChessMove move) {
+        ChessPiece myPiece = getPiece(move.getStartPosition());
+        ChessGame.TeamColor myColor;
+        movePiece(move.getStartPosition(), move.getEndPosition());
+        if (myPiece != null) {
+            myColor = myPiece.getTeamColor();
+        } else return;
+        if (move.promotion != null) {
+            addPiece(move.getEndPosition(), new ChessPiece(myColor, move.promotion));
+        }
+    }
+
     /**
      * Gets chess piece position based on color and type. Used for getting king in checking for check
      * @param color Color of chess piece to get
@@ -122,7 +134,7 @@ public class ChessBoard {
                 s.append("|");
                 ChessPiece thisPiece = pieces.get(new ChessPosition(i,j));
                 if (thisPiece != null) {
-                    s.append(thisPiece.toString());
+                    s.append(thisPiece);
                 } else {
                     s.append(" ");
                 }

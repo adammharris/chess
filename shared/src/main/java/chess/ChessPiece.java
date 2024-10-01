@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Represents a single chess piece
@@ -73,7 +74,9 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        ChessPiece.PieceType currentPiece = board.getPiece(myPosition).getPieceType();
+        ChessPiece thisPiece = board.getPiece(myPosition);
+        if (thisPiece == null) return new HashSet<>();
+        ChessPiece.PieceType currentPiece = thisPiece.getPieceType();
         //HashSet<ChessMove> moves = new HashSet<>();
         return switch (currentPiece) {
             case KING -> {

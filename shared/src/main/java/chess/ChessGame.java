@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 
 /**
@@ -52,7 +53,9 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        Collection<ChessMove> moves = board.getPiece(startPosition).pieceMoves(board, startPosition);
+        ChessPiece startPiece = board.getPiece(startPosition);
+        if (startPiece == null) return new HashSet<>();
+        Collection<ChessMove> moves = startPiece.pieceMoves(board, startPosition);
         TeamColor myTeamColor = board.getPiece(startPosition).getTeamColor();
         Iterator<ChessMove> iterator = moves.iterator();
         while (iterator.hasNext()) {
@@ -77,6 +80,12 @@ public class ChessGame {
         2. Check if my team is in check. If so, only allow moves that protect the king
         3.
          */
+        ChessPiece thisPiece = board.getPiece(move.getStartPosition());
+        if (thisPiece == null) throw new InvalidMoveException("Piece is null");
+
+        TeamColor thisColor = thisPiece.getTeamColor();
+        if (thisColor != currentTurn) throw new InvalidMoveException("Cannot move out of turn");
+
         Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
         boolean moveIsInValidMoves = false;
         for (ChessMove vm : validMoves) {
@@ -86,10 +95,15 @@ public class ChessGame {
             }
         }
         if (moveIsInValidMoves) {
-            board.movePiece(move.getStartPosition(), move.getEndPosition());
+            board.executeMove(move);
         } else {
             throw new InvalidMoveException();
         }
+
+        // Change turn
+        if (currentTurn == TeamColor.BLACK) {
+            currentTurn = TeamColor.WHITE;
+        } else currentTurn = TeamColor.BLACK;
     }
 
     /**
