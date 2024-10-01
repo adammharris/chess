@@ -43,16 +43,6 @@ public class ChessGame {
         BLACK
     }
 
-    /**
-     *  Returns the opposite color
-     * @param c Color to be opposed
-     * @return Opposite color from c
-     */
-    public static TeamColor oppositeColor(TeamColor c) {
-        if (c == TeamColor.BLACK) {
-            return TeamColor.WHITE;
-        } else return TeamColor.BLACK;
-    }
 
     /**
      * Gets a valid moves for a piece at the given location
