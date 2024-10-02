@@ -7,8 +7,8 @@ import java.util.HashMap;
  * signature of the existing methods.
  */
 public class ChessBoard {
-    private HashMap<ChessPosition, ChessPiece> pieces = new HashMap<>();
-    private static HashMap<ChessPosition, ChessPiece> defaultBoard = new HashMap<>();
+    private final HashMap<ChessPosition, ChessPiece> pieces = new HashMap<>();
+    private final static HashMap<ChessPosition, ChessPiece> defaultBoard = new HashMap<>();
     public ChessBoard() {
         if (defaultBoard.isEmpty()) {
             defineDefault();
@@ -53,10 +53,9 @@ public class ChessBoard {
      *
      * @param position where to add the piece to
      * @param piece    the piece to add
-     * @return previous ChessPiece as returned by HashMap.put
      */
-    public ChessPiece addPiece(ChessPosition position, ChessPiece piece) {
-        return pieces.put(position, piece);
+    public void addPiece(ChessPosition position, ChessPiece piece) {
+        pieces.put(position, piece);
     }
 
     /**
@@ -85,8 +84,8 @@ public class ChessBoard {
      * @param oldPos Original position of chess piece to be moved. Uses getPiece
      * @param newPos New position of chess piece to be moved. Uses removePiece and addPiece
      */
-    public ChessPiece movePiece(ChessPosition oldPos, ChessPosition newPos) {
-        return addPiece(newPos, removePiece(oldPos));
+    public void movePiece(ChessPosition oldPos, ChessPosition newPos) {
+        addPiece(newPos, removePiece(oldPos));
     }
 
     public void executeMove(ChessMove move) {

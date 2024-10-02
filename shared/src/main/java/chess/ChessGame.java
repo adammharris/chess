@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -11,7 +12,7 @@ import java.util.Iterator;
  * signature of the existing methods.
  */
 public class ChessGame {
-    public int turnNum = 0;
+    //public int turnNum = 0;
     private TeamColor currentTurn = TeamColor.WHITE;
     private ChessBoard board = new ChessBoard();
     ChessPosition kingPos;
@@ -75,11 +76,6 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        /*
-        1. Check if piece is not occupied by a piece of the same team (unless castling)
-        2. Check if my team is in check. If so, only allow moves that protect the king
-        3.
-         */
         ChessPiece thisPiece = board.getPiece(move.getStartPosition());
         if (thisPiece == null) throw new InvalidMoveException("Piece is null");
 
@@ -113,29 +109,66 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        java.util.HashMap<ChessPosition, ChessPiece> pieces = board.getPieces();
-        ChessPosition kingPos = board.getPosition(teamColor, ChessPiece.PieceType.KING);
-        for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
-            if (piece.getValue().getTeamColor() == teamColor) continue;
-            Collection<ChessMove> moves = piece.getValue().pieceMoves(board, piece.getKey());
-            for (ChessMove move : moves) {
-                if (move.getEndPosition().equals(kingPos)) return true;
-            }
-        }
-        return false;
+        ChessGameState state = checkGameState(teamColor, this.board, ChessGameState.CHECK);
+        return state == ChessGameState.CHECK;
+    }
+    public boolean isInCheck(TeamColor teamColor, ChessBoard board) {
+        ChessGameState state = checkGameState(teamColor, board, ChessGameState.CHECK);
+        return state == ChessGameState.CHECK;
     }
 
-    public static boolean isInCheck(TeamColor teamColor, ChessBoard board) {
-        java.util.HashMap<ChessPosition, ChessPiece> pieces = board.getPieces();
+    private enum ChessGameState {
+        CHECK,
+        CHECKMATE,
+        STALEMATE,
+        NORMAL
+    }
+
+    private ChessGameState checkGameState(TeamColor teamColor, ChessBoard board, ChessGameState checkFor) {
+        // First, see if the team is in check
+        HashMap<ChessPosition, ChessPiece> pieces = board.getPieces();
+        boolean isInCheck = false;
         ChessPosition kingPos = board.getPosition(teamColor, ChessPiece.PieceType.KING);
         for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
             if (piece.getValue().getTeamColor() == teamColor) continue;
             Collection<ChessMove> moves = piece.getValue().pieceMoves(board, piece.getKey());
             for (ChessMove move : moves) {
-                if (move.getEndPosition().equals(kingPos)) return true;
+                if (move.getEndPosition().equals(kingPos)) {
+                    isInCheck = true;
+                    break;
+                }
             }
+            if (isInCheck) break;
         }
-        return false;
+
+        if (checkFor == ChessGameState.CHECK) {
+            return (isInCheck) ? ChessGameState.CHECK : ChessGameState.NORMAL;
+        }
+
+        // Second, check for Checkmate and Stalemate
+        boolean isCheckmate = true;
+        boolean isStalemate = true;
+        for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
+            if (piece.getValue().getTeamColor() != teamColor) continue;
+            Collection<ChessMove> moves = validMoves(piece.getKey());
+            for (ChessMove move : moves) {
+                ChessBoard simulateCheck = new ChessBoard(board);
+                simulateCheck.executeMove(move);
+                if (!isInCheck(teamColor, simulateCheck)) {
+                    isStalemate = false;
+                    isCheckmate = false;
+                    break;
+                }
+            }
+            if (!isCheckmate) break;
+        }
+
+        if (checkFor == ChessGameState.CHECKMATE) {
+            return (isCheckmate && isInCheck) ? ChessGameState.CHECKMATE : ChessGameState.NORMAL;
+        } else if (checkFor == ChessGameState.STALEMATE) {
+            return (isStalemate && !isInCheck) ? ChessGameState.STALEMATE : ChessGameState.NORMAL;
+        }
+        return ChessGameState.NORMAL;
     }
 
     /**
@@ -145,7 +178,8 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ChessGameState state = checkGameState(teamColor, this.board, ChessGameState.CHECKMATE);
+        return state == ChessGameState.CHECKMATE;
     }
 
     /**
@@ -156,7 +190,8 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ChessGameState state = checkGameState(teamColor, this.board, ChessGameState.STALEMATE);
+        return state == ChessGameState.STALEMATE;
     }
 
     /**
