@@ -9,6 +9,7 @@ import java.util.HashMap;
 public class ChessBoard {
     private final HashMap<ChessPosition, ChessPiece> pieces = new HashMap<>();
     private final static HashMap<ChessPosition, ChessPiece> defaultBoard = new HashMap<>();
+    private ChessMove lastMove;
     public ChessBoard() {
         if (defaultBoard.isEmpty()) {
             defineDefault();
@@ -18,6 +19,7 @@ public class ChessBoard {
     // Used to simulate moves
     public ChessBoard(ChessBoard board) {
         this.pieces.putAll(board.getPieces());
+        this.lastMove = board.getLastMove();
     }
 
 
@@ -92,12 +94,31 @@ public class ChessBoard {
         ChessPiece myPiece = getPiece(move.getStartPosition());
         ChessGame.TeamColor myColor;
         movePiece(move.getStartPosition(), move.getEndPosition());
+        if (myPiece != null && myPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
+            // Handle En Passant capture
+            ChessMove lastMove = getLastMove();
+            if (lastMove != null) {
+                ChessPosition lastEnd = lastMove.getEndPosition();
+                boolean isEnPassantCapture = Math.abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) == 1 &&
+                        Math.abs(move.getStartPosition().getRow() - move.getEndPosition().getRow()) == 1;
+                if (isEnPassantCapture) {
+                    ChessPosition capturedPawnPosition = new ChessPosition(lastEnd.getRow(), move.getEndPosition().getColumn());
+                    removePiece(capturedPawnPosition);
+                }
+            }
+        }
+
         if (myPiece != null) {
             myColor = myPiece.getTeamColor();
-        } else return;
-        if (move.promotion != null) {
-            addPiece(move.getEndPosition(), new ChessPiece(myColor, move.promotion));
+            if (move.promotion != null) {
+                addPiece(move.getEndPosition(), new ChessPiece(myColor, move.promotion));
+            }
         }
+        lastMove = move;
+    }
+
+    public ChessMove getLastMove() {
+        return lastMove;
     }
 
     /**

@@ -15,6 +15,7 @@ public class PawnMoveCalculator implements PieceMoveCalculator {
             }
             addIfAttackable(board, moves, myPosition, 1, 1);
             addIfAttackable(board, moves, myPosition, 1, -1);
+            addEnPassantMoves(board, moves, myPosition, 1);
         } else {
             boolean canAdvance = addMoveIfValid(board, moves, myPosition, -1);
             if (myPosition.getRow() == 7 && canAdvance) {
@@ -22,6 +23,7 @@ public class PawnMoveCalculator implements PieceMoveCalculator {
             }
             addIfAttackable(board, moves, myPosition, -1, 1);
             addIfAttackable(board, moves, myPosition, -1, -1);
+            addEnPassantMoves(board, moves, myPosition, -1);
         }
         return moves;
     }
@@ -65,4 +67,28 @@ public class PawnMoveCalculator implements PieceMoveCalculator {
             moves.add(new ChessMove(position, newPos));
         }
     }
+
+    private void addEnPassantMoves(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int direction) {
+        ChessMove lastMove = board.getLastMove();
+        if (lastMove == null) return;
+
+        ChessPosition lastStart = lastMove.getStartPosition();
+        ChessPosition lastEnd = lastMove.getEndPosition();
+        ChessPiece lastPiece = board.getPiece(lastEnd);
+
+        /*
+        1. The capturing pawn must have advanced exactly three ranks to perform this move.
+        2. The captured pawn must have moved two squares in one move, landing right next to the capturing pawn.
+        3. The en passant capture must be performed on the turn immediately after the pawn being captured moves. If the player does not capture en passant on that turn, they no longer can do it later.
+         */
+        boolean victimIsPawn = lastPiece != null && lastPiece.getPieceType() == ChessPiece.PieceType.PAWN;
+        boolean pawnMovedTwoSpaces = Math.abs(lastEnd.getRow() - lastStart.getRow()) == 2;
+        boolean pawnIsOneColumnAway = Math.abs(lastEnd.getColumn() - position.getColumn()) == 1;
+        boolean onSameRow = lastEnd.getRow() == position.getRow();
+        if (victimIsPawn && pawnMovedTwoSpaces && pawnIsOneColumnAway && onSameRow) {
+            ChessPosition enPassantCapture = new ChessPosition(position.getRow() + direction, lastEnd.getColumn());
+            moves.add(new ChessMove(position, enPassantCapture));
+        }
+    }
+
 }
