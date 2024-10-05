@@ -88,15 +88,13 @@ public class ChessBoard {
      */
     public void movePiece(ChessPosition oldPos, ChessPosition newPos) {
         addPiece(newPos, removePiece(oldPos));
-        //System.out.println(this);
-        //getPiece(newPos).hasMoved = true;
     }
 
     public void executeMove(ChessMove move) {
-        ChessPiece myPiece = getPiece(move.getStartPosition());
+        ChessPiece myPiece;
         ChessGame.TeamColor myColor;
         movePiece(move.getStartPosition(), move.getEndPosition());
-
+        myPiece = getPiece(move.getEndPosition());
         if (myPiece != null && myPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
             // En Passant capture
             ChessMove lastMove = getLastMove();
@@ -128,7 +126,7 @@ public class ChessBoard {
         if (move.promotion != null) {
             addPiece(move.getEndPosition(), new ChessPiece(myColor, move.promotion));
         }
-        getPiece(move.getEndPosition()).hasMoved = true;
+        myPiece.hasMoved = true;
         lastMove = move;
     }
 

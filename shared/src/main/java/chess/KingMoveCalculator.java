@@ -55,9 +55,13 @@ public class KingMoveCalculator implements PieceMoveCalculator {
         3. The King is not in Check (tested in validMoves)
         4. Both your Rook and King will be safe after making the move (cannot be captured by any enemy pieces).
          */
+        int currentRow = kingPosition.getRow();
+        if (!(kingPosition.getRow() == 8 || kingPosition.getRow() == 1) || board.getPiece(kingPosition).hasMoved) return false;
         if (board.getPiece(kingPosition).hasMoved) return false;
-        ChessPiece rook = board.getPiece(new ChessPosition(kingPosition.getRow(), 8));
-        if (rook != null && rook.hasMoved) return false;
+        ChessPosition rookPosition = new ChessPosition(currentRow, 8);
+        if (board.getPiece(rookPosition) == null) return false;
+        if (board.getPiece(rookPosition).hasMoved) return false;
+        if (board.getPiece(rookPosition).getPieceType() != ChessPiece.PieceType.ROOK) return false;
 
         ChessPiece bishop = board.getPiece(new ChessPosition(kingPosition.getRow(), 6));
         ChessPiece knight = board.getPiece(new ChessPosition(kingPosition.getRow(), 7));
@@ -65,7 +69,7 @@ public class KingMoveCalculator implements PieceMoveCalculator {
 
         if (isInDanger(board, kingPosition, teamColor)) return false;
 
-        if (!(kingPosition.getRow() == 8 || kingPosition.getRow() == 1)) return false;
+
         ChessBoard simulate = new ChessBoard(board);
         simulate.movePiece(kingPosition, new ChessPosition(kingPosition.getRow(), 7));
         simulate.movePiece(new ChessPosition(kingPosition.getRow(), 8), new ChessPosition(kingPosition.getRow(), 6));
@@ -74,18 +78,27 @@ public class KingMoveCalculator implements PieceMoveCalculator {
     }
 
     private boolean canCastleQueenside(ChessBoard board, ChessPosition kingPosition, ChessGame.TeamColor teamColor) {
-        // Implement the logic to check if queenside castling is possible
-        // Ensure the king and rook have not moved, no pieces between them, and no squares are under attack
+        int currentRow = kingPosition.getRow();
+        if (!(kingPosition.getRow() == 8 || kingPosition.getRow() == 1) || board.getPiece(kingPosition).hasMoved) return false;
         if (board.getPiece(kingPosition).hasMoved) return false;
-        ChessPiece rook = board.getPiece(new ChessPosition(kingPosition.getRow(), 1));
-        if (rook != null && rook.hasMoved) return false;
+        ChessPosition rookPosition = new ChessPosition(currentRow, 1);
+        if (board.getPiece(rookPosition) == null) return false;
+        if (board.getPiece(rookPosition).hasMoved) return false;
+        if (board.getPiece(rookPosition).getPieceType() != ChessPiece.PieceType.ROOK) return false;
 
-        ChessPiece queen = board.getPiece(new ChessPosition(kingPosition.getRow(), 4));
-        ChessPiece bishop = board.getPiece(new ChessPosition(kingPosition.getRow(), 3));
-        ChessPiece knight = board.getPiece(new ChessPosition(kingPosition.getRow(), 2));
-        if (queen != null || bishop != null || knight != null) return false;
+        ChessPosition queenPosition = new ChessPosition(kingPosition.getRow(), 4);
+        ChessPosition bishopPosition = new ChessPosition(kingPosition.getRow(), 3);
+        ChessPosition knightPosition = new ChessPosition(kingPosition.getRow(), 2);
+        if (board.getPiece(bishopPosition) != null || board.getPiece(knightPosition) != null || board.getPiece(queenPosition) != null) return false;
 
-        return !isInDanger(board, kingPosition, teamColor);
+        if (isInDanger(board, kingPosition, teamColor)) return false;
+
+
+        ChessBoard simulate = new ChessBoard(board);
+        simulate.movePiece(kingPosition, knightPosition);
+        simulate.movePiece(rookPosition, bishopPosition);
+        if (isInDanger(simulate, knightPosition, teamColor)) return false;
+        return !isInDanger(simulate, bishopPosition, teamColor);
     }
 
     private boolean isInDanger(ChessBoard board, ChessPosition position, ChessGame.TeamColor teamColor) {
@@ -96,9 +109,10 @@ public class KingMoveCalculator implements PieceMoveCalculator {
                 System.out.println(position);
             }
             if (piece == null) return false;
-            if (piece.getTeamColor() != teamColor && piece.getPieceType() != ChessPiece.PieceType.KING) {
-                Collection<ChessMove> moves = piece.teamPieceMoves(board, entry.getKey(), piece.getTeamColor());
+            if (piece.getTeamColor() != teamColor) {
+                Collection<ChessMove> moves = piece.pieceMoves(board, entry.getKey());
                 for (ChessMove move : moves) {
+                    if (board.getPiece(move.getStartPosition()).getTeamColor() == teamColor) continue;
                     if (move.getEndPosition().equals(position)) {
                         return true;
                     }
