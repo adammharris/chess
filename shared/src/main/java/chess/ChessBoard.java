@@ -88,14 +88,17 @@ public class ChessBoard {
      */
     public void movePiece(ChessPosition oldPos, ChessPosition newPos) {
         addPiece(newPos, removePiece(oldPos));
+        //System.out.println(this);
+        //getPiece(newPos).hasMoved = true;
     }
 
     public void executeMove(ChessMove move) {
         ChessPiece myPiece = getPiece(move.getStartPosition());
         ChessGame.TeamColor myColor;
         movePiece(move.getStartPosition(), move.getEndPosition());
+
         if (myPiece != null && myPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
-            // Handle En Passant capture
+            // En Passant capture
             ChessMove lastMove = getLastMove();
             if (lastMove != null) {
                 ChessPosition lastEnd = lastMove.getEndPosition();
@@ -108,12 +111,24 @@ public class ChessBoard {
             }
         }
 
-        if (myPiece != null) {
-            myColor = myPiece.getTeamColor();
-            if (move.promotion != null) {
-                addPiece(move.getEndPosition(), new ChessPiece(myColor, move.promotion));
+        if (myPiece != null && myPiece.getPieceType() == ChessPiece.PieceType.KING) {
+            // Handle castling
+            if (Math.abs(move.getEndPosition().getColumn() - move.getStartPosition().getColumn()) == 2) {
+                // Kingside castling
+                if (move.getEndPosition().getColumn() > move.getStartPosition().getColumn()) {
+                    movePiece(new ChessPosition(move.getStartPosition().getRow(), 8), new ChessPosition(move.getStartPosition().getRow(), 6));
+                }
+                // Queenside castling
+                else {
+                    movePiece(new ChessPosition(move.getStartPosition().getRow(), 1), new ChessPosition(move.getStartPosition().getRow(), 4));
+                }
             }
         }
+        myColor = myPiece.getTeamColor();
+        if (move.promotion != null) {
+            addPiece(move.getEndPosition(), new ChessPiece(myColor, move.promotion));
+        }
+        getPiece(move.getEndPosition()).hasMoved = true;
         lastMove = move;
     }
 

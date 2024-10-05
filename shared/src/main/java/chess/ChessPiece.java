@@ -12,6 +12,7 @@ import java.util.HashSet;
 public class ChessPiece {
     private final ChessGame.TeamColor color;
     private final ChessPiece.PieceType type;
+    public boolean hasMoved = false;
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.color = pieceColor;
         this.type = type;
@@ -76,6 +77,39 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPiece thisPiece = board.getPiece(myPosition);
         if (thisPiece == null) return new HashSet<>();
+        ChessPiece.PieceType currentPiece = thisPiece.getPieceType();
+        //HashSet<ChessMove> moves = new HashSet<>();
+        return switch (currentPiece) {
+            case KING -> {
+                KingMoveCalculator k = new KingMoveCalculator();
+                yield k.pieceMoves(board, myPosition);
+            }
+            case QUEEN -> {
+                QueenMoveCalculator q = new QueenMoveCalculator();
+                yield q.pieceMoves(board, myPosition);
+            }
+            case BISHOP -> {
+                BishopMoveCalculator b = new BishopMoveCalculator();
+                yield b.pieceMoves(board, myPosition);
+            }
+            case KNIGHT -> {
+                KnightMoveCalculator n = new KnightMoveCalculator();
+                yield n.pieceMoves(board, myPosition);
+            }
+            case ROOK -> {
+                RookMoveCalculator r = new RookMoveCalculator();
+                yield r.pieceMoves(board, myPosition);
+            }
+            case PAWN -> {
+                PawnMoveCalculator p = new PawnMoveCalculator();
+                yield p.pieceMoves(board, myPosition);
+            }
+        };
+    }
+
+    public Collection<ChessMove> teamPieceMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor thisTeam) {
+        ChessPiece thisPiece = board.getPiece(myPosition);
+        if (thisPiece == null || thisPiece.getTeamColor() != thisTeam) return new HashSet<>();
         ChessPiece.PieceType currentPiece = thisPiece.getPieceType();
         //HashSet<ChessMove> moves = new HashSet<>();
         return switch (currentPiece) {

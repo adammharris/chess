@@ -63,6 +63,11 @@ public class ChessGame {
             ChessMove move = iterator.next();
             ChessBoard simulateCheck = new ChessBoard(board);
             simulateCheck.movePiece(move.getStartPosition(), move.getEndPosition());
+            /*if (board.getPiece(move.getEndPosition()).getPieceType() == ChessPiece.PieceType.KING) {
+                if (Math.abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) == 2) {
+                    System.out.println("Castling move detected!");
+                }
+            }*/
             boolean afterInCheck = isInCheck(myTeamColor, simulateCheck);
             if (afterInCheck) iterator.remove();
         }
