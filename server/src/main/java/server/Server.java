@@ -1,6 +1,7 @@
 package server;
 
 import spark.*;
+import handler.*;
 
 public class Server {
 
@@ -10,7 +11,8 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
-
+        //CreateGameHandler cgh = CreateGameHandler();
+        Spark.post("/user", this::registerUser);
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
 
@@ -18,8 +20,14 @@ public class Server {
         return Spark.port();
     }
 
+
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    private Object registerUser(Request request, Response response) {
+        RegisterHandler rg = new RegisterHandler();
+        return rg.simpleResponse(request, response);
     }
 }
