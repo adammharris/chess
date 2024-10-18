@@ -5,7 +5,7 @@ import handler.RegisterResult;
 
 public class RegisterService {
     public RegisterResult register(RegisterRequest registerRequest) {
-        String username = registerRequest.getUsername();
+        String username = registerRequest.username();
         String authToken = "placeholder";
         // TODO: Get authToken from dataaccess
         return new RegisterResult(username, authToken);
