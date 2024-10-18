@@ -1,13 +1,13 @@
 package service;
 
-import handler.RegisterRequest;
 import handler.RegisterResult;
+import model.UserData;
+import model.AuthData;
 
 public class RegisterService {
-    public RegisterResult register(RegisterRequest registerRequest) {
-        String username = registerRequest.username();
+    public AuthData register(UserData registerRequest) {
         String authToken = "placeholder";
         // TODO: Get authToken from dataaccess
-        return new RegisterResult(username, authToken);
+        return new AuthData(registerRequest.username(), authToken);
     }
 }
