@@ -8,7 +8,7 @@ import service.UserService;
 import model.UserData;
 import model.AuthData;
 
-public class LoginHandler {
+public class LoginHandler extends HttpHandler {
     public Object login(Request request, Response response) {
         String acceptHeader = request.headers("Accept");
         Gson gson = new Gson();
@@ -20,13 +20,11 @@ public class LoginHandler {
 
     public Object logout(Request request, Response response) {
         String acceptHeader = request.headers("Accept");
+        String res = validateAuthToken(request, response);
+        if (!res.equals("{}")) return res;
         AuthData logoutRequest = new AuthData(request.headers("Authorization"), "");
         AuthService logoutService = new AuthService();
-        if (!logoutService.validateAuthToken(logoutRequest)) {
-            response.status(401);
-            return "{\"message\":\"Error: unauthorized\"}";
-        }
         logoutService.deleteAuth(logoutRequest);
-        return "{}";
+        return res;
     }
 }

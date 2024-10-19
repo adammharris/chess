@@ -10,7 +10,7 @@ public class AuthService {
     public void deleteAuth(AuthData user) {
         // TODO: remove AuthData from data access
     }
-    public boolean validateAuthToken(AuthData user) {
+    public boolean validateAuthToken(String authToken) {
         // TODO: find AuthToken from data access
         return true;
     }

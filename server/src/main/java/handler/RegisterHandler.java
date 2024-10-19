@@ -7,7 +7,7 @@ import service.UserService;
 import model.UserData;
 import model.AuthData;
 
-public class RegisterHandler {
+public class RegisterHandler extends HttpHandler {
 
     public Object register(Request request, Response response) {
         String acceptHeader = request.headers("Accept");
