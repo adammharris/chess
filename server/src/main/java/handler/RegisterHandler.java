@@ -9,7 +9,7 @@ import model.AuthData;
 
 public class RegisterHandler {
 
-    public Object simpleResponse(Request request, Response response) {
+    public Object register(Request request, Response response) {
         String acceptHeader = request.headers("Accept");
         Gson gson = new Gson();
         UserData registerRequest = gson.fromJson(request.body(), UserData.class);

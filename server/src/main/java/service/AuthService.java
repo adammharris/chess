@@ -4,10 +4,14 @@ import model.AuthData;
 import java.util.UUID;
 
 public class AuthService {
-    AuthData createAuth() {
-        return new AuthData(UUID.randomUUID().toString(), "AuthUsername");
+    AuthData createAuth(String username) {
+        return new AuthData(UUID.randomUUID().toString(), username);
     }
-    void deleteAuth() {
-        // TODO:
+    public void deleteAuth(AuthData user) {
+        // TODO: remove AuthData from data access
+    }
+    public boolean validateAuthToken(AuthData user) {
+        // TODO: find AuthToken from data access
+        return true;
     }
 }

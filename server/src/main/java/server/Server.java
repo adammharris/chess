@@ -12,7 +12,9 @@ public class Server {
 
         // Register your endpoints and handle exceptions here.
         //CreateGameHandler cgh = CreateGameHandler();
-        Spark.post("/user", this::registerUser);
+        Spark.post("/user", new RegisterHandler()::register);
+        Spark.post("/session", new LoginHandler()::login);
+        Spark.delete("/session", new LoginHandler()::logout);
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
 
@@ -28,6 +30,6 @@ public class Server {
 
     private Object registerUser(Request request, Response response) {
         RegisterHandler rg = new RegisterHandler();
-        return rg.simpleResponse(request, response);
+        return rg.register(request, response);
     }
 }
