@@ -3,10 +3,15 @@ package service;
 import model.GameData;
 import chess.ChessGame;
 
+import java.util.HashMap;
+
 public class GameService {
+    //HashMap<int, GameData> games = new HashMap();
     public GameData createGame(String gameName) {
         // TODO: add game to data access
-        return new GameData(1, "white", "black", "name", new ChessGame());
+        GameData newGame = new GameData(1, "white", "black", "name", new ChessGame());
+        //games.put(newGame.gameID(), newGame);
+        return newGame;
     }
     public GameData getGame() {
         ChessGame game = new ChessGame();
@@ -20,6 +25,7 @@ public class GameService {
     }
 
     public GameData updateGame(String playerColor, int gameID) {
+        // TODO: actually update game
         return createGame("updateGame");
     }
 }

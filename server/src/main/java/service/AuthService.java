@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public class AuthService {
     AuthData createAuth(String username) {
+        // TODO: actually create Auth
         return new AuthData(UUID.randomUUID().toString(), username);
     }
     public void deleteAuth(AuthData user) {
