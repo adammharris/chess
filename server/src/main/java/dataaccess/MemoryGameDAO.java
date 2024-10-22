@@ -17,8 +17,9 @@ public class MemoryGameDAO implements GameDAO {
 
     @Override
     public void createGame(GameData game) throws DataAccessException {
-        GameData previousAuth = games.put(game.gameID(), game);
-        if (previousAuth != null) throw new DataAccessException("Already exists, cannot create");
+        GameData gameToAdd = new GameData(games.size(), "", "", game.gameName(), game.game());
+        if (games.get(gameToAdd.gameID()) != null) throw new DataAccessException("Already exists, cannot create");
+        games.put(gameToAdd.gameID(), gameToAdd);
     }
 
     @Override
@@ -42,5 +43,9 @@ public class MemoryGameDAO implements GameDAO {
     public void updateGame(GameData game) throws DataAccessException {
         GameData previousGame = games.put(game.gameID(), game);
         if (previousGame == null) throw new DataAccessException(game.gameID() + " not found, cannot update");
+    }
+
+    public HashMap<Integer, GameData> getGames() {
+        return games;
     }
 }

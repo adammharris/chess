@@ -12,7 +12,7 @@ public interface UserDAO {
 
     /**
      * Retrieves user from database
-     * @param username Unique string representing user
+     * @param user Unique string representing user
      * @return UserData object containing given username
      * @throws DataAccessException Throws if username is not found
      */
