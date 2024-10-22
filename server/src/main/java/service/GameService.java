@@ -1,5 +1,6 @@
 package service;
 
+import dataaccess.MemoryGameDAO;
 import model.GameData;
 import chess.ChessGame;
 
@@ -27,5 +28,10 @@ public class GameService {
     public GameData updateGame(String playerColor, int gameID) {
         // TODO: actually update game
         return createGame("updateGame");
+    }
+
+    public void clear() {
+        MemoryGameDAO gameDAO = MemoryGameDAO.getInstance();
+        gameDAO.clear();
     }
 }

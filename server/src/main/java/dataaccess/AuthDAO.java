@@ -1,12 +1,32 @@
 package dataaccess;
 
 import model.AuthData;
-import model.GameData;
 
 public interface AuthDAO {
-    void createAuth(AuthData auth) throws DataAccessException;
-    AuthData getAuth(String authToken) throws DataAccessException;
+    /**
+     * Adds auth to database
+     * @param username Unique string representing user
+     * @throws DataAccessException Throws if addition fails
+     */
+    AuthData createAuth(String username) throws DataAccessException;
+
+    /**
+     * Retrieves auth from database given authToken
+     * @param username Unique string representing user
+     * @return AuthData object representing authentication information
+     * @throws DataAccessException Throws if authToken is not found
+     */
+    AuthData getAuth(String username) throws DataAccessException;
+
+    /**
+     * Removes auth from database given authToken
+     * @param authToken
+     * @throws DataAccessException Throws if deletion fails
+     */
     void deleteAuth(String authToken) throws DataAccessException;
-    //void updateGame(GameData game) throws DataAccessException;
-    void clear() throws DataAccessException;
+
+    /**
+     * Deletes all auths from database
+     */
+    void clear();
 }
