@@ -37,14 +37,6 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public void deleteGame(int gameID) throws DataAccessException {
-        GameData auth = games.remove(gameID);
-        if (auth == null) {
-            throw new DataAccessException("Error: Bad request");
-        }
-    }
-
-    @Override
     public void clear() {
         games.clear();
     }

@@ -48,12 +48,6 @@ public class MemoryUserDAO implements UserDAO {
     }
 
     @Override
-    public void deleteUser(String username) throws DataAccessException {
-        UserData user = users.remove(username);
-        //if (user == null) throw new DataAccessException("Error: Unauthorized");
-    }
-
-    @Override
     public void clear() {
         users.clear();
     }
