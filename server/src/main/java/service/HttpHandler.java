@@ -1,6 +1,5 @@
-package handler;
+package service;
 
-import service.AuthService;
 import spark.Request;
 import spark.Response;
 
@@ -11,7 +10,7 @@ abstract class HttpHandler {
         AuthService validator = new AuthService();
         if (!validator.validateAuthToken(authToken)) {
             response.status(401);
-            return "{\"message\":\"Error: unauthorized\"}";
+            return "{\"message\":\"Error: Unauthorized\"}";
         }
         return "{}";
     }

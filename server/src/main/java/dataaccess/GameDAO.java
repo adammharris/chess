@@ -5,10 +5,11 @@ import model.GameData;
 public interface GameDAO {
     /**
      * Adds game to database
-     * @param game GameData object containing all information about the game
+     * @param gameName String representing name of the game
+     * @return GameData object containing all information about the game
      * @throws DataAccessException Throws if information is invalid
      */
-    void createGame(GameData game) throws DataAccessException;
+    GameData createGame(String gameName) throws DataAccessException;
 
     /**
      * Retrieves game from database given gameID

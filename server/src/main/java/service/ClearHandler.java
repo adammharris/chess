@@ -1,9 +1,5 @@
-package handler;
+package service;
 
-import dataaccess.MemoryAuthDAO;
-import service.AuthService;
-import service.GameService;
-import service.UserService;
 import spark.Request;
 import spark.Response;
 

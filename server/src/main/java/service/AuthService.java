@@ -10,15 +10,10 @@ public class AuthService {
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     //private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-    AuthData createAuth(String username) {
+    AuthData createAuth(String username) throws DataAccessException {
         MemoryAuthDAO authDAO = MemoryAuthDAO.getInstance();
         AuthData auth;
-        try {
-            auth = authDAO.createAuth(username);
-        } catch (DataAccessException e) {
-            log.error("e: ", e);
-            return new AuthData("", "Already logged in");
-        }
+        auth = authDAO.createAuth(username);
         return auth;
     }
     public void deleteAuth(AuthData user) {

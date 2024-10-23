@@ -18,27 +18,26 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
     @Override
-    public AuthData createAuth(String username) throws DataAccessException {
-        if (auths.get(username) != null) throw new DataAccessException("Already exists, cannot create");
+    public AuthData createAuth(String username) {
+        //if (auths.get(username) != null) return auths.get(username);
         AuthData newAuth = new AuthData(UUID.randomUUID().toString(), username);
-        AuthData previousAuth = auths.put(newAuth.username(), newAuth);
+        auths.put(newAuth.authToken(), newAuth);
         return newAuth;
     }
 
     @Override
-    public AuthData getAuth(String username) throws DataAccessException {
-        AuthData auth = auths.get(username);
-        if (auth == null) throw new DataAccessException("username not found, cannot get");
+    public AuthData getAuth(String authToken) throws DataAccessException {
+        AuthData auth = auths.get(authToken);
+        if (auth == null) throw new DataAccessException("Error: Not found");
         return auth;
     }
     //public AuthData getAuth(Str)
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-        String username = getUsername(authToken);
-        AuthData auth = new AuthData(authToken, username);
-        boolean wasRemoved = auths.remove(auth.username(), auth);
-        if (!wasRemoved) throw new DataAccessException("Deletion failed");
+        AuthData auth = auths.remove(authToken);
+        if (auth == null) throw new DataAccessException("Deletion failed");
+        //if (!wasRemoved) throw new DataAccessException("Deletion failed");
     }
 
     @Override
@@ -47,9 +46,13 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
     public String getUsername(String authToken) throws DataAccessException {
-        for (AuthData auth : auths.values()) {
-            if (auth.authToken().equals(authToken)) return auth.username();
+        AuthData auth = auths.get(authToken);
+        //if (auth == null) throw new DataAccessException("Error: Unauthorized");
+        //
+        if (auth != null) {
+            return auth.username();
         }
-        throw new DataAccessException("authToken not found");
+        //return auth;
+        throw new DataAccessException("Error: Unauthorized");
     }
 }

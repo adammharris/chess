@@ -11,31 +11,23 @@ import org.slf4j.LoggerFactory;
 public class UserService {
     private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
-    public AuthData register(UserData user) {
+    public AuthData register(UserData user) throws DataAccessException {
         MemoryUserDAO userDAO = MemoryUserDAO.getInstance();
-        try {
-            userDAO.createUser(user);
-        } catch (DataAccessException e) {
-            return new AuthData("", "NAME_TAKEN");
-        }
+        userDAO.createUser(user);
         return login(user);
     }
-    public AuthData login(UserData user) {
+    public AuthData login(UserData user) throws DataAccessException {
         //AuthService as = new AuthService();
         // Check if user exists
         MemoryUserDAO userDAO = MemoryUserDAO.getInstance();
-        try {
-            userDAO.getUser(user);
-        } catch (DataAccessException e) {
-            return new AuthData("", "404");
-        }
+        userDAO.getUser(user);
 
         // Check if AuthData exists
         MemoryAuthDAO authDAO = MemoryAuthDAO.getInstance();
 
         // Create new AuthData
         AuthService as = new AuthService();
-        return as.createAuth(user.username());
+          return as.createAuth(user.username());
     }
     public void logout(AuthData auth) {
         AuthService as = new AuthService();

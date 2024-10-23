@@ -18,22 +18,35 @@ public class MemoryUserDAO implements UserDAO {
     }
     @Override
     public void createUser(UserData user) throws DataAccessException {
-        UserData previous = users.put(user.username(), user);
-        if (previous != null) throw new DataAccessException("Previous data found with name " + user.username());
+        UserData currentUser = users.get(user.username());
+        if (currentUser != null) {
+            if (currentUser.equals(user)) {
+                throw new DataAccessException("Error: Forbidden");
+            }
+        }
+        //if (users.get(user.username()) != null) throw new DataAccessException("Error: Forbidden");
+        users.put(user.username(), user);
+
     }
 
     @Override
     public UserData getUser(UserData loginRequest) throws DataAccessException {
         UserData user = users.get(loginRequest.username());
-        if (user == null) throw new DataAccessException("username not found, cannot get");
-        if (!loginRequest.password().equals(user.password())) throw new DataAccessException("Incorrect password");
+        if (user == null) throw new DataAccessException("Error: Unauthorized");
+        if (loginRequest.password() == null) throw new DataAccessException("Error: Bad request");
+        if (user != null) {
+            if (!loginRequest.password().equals(user.password())) {
+                throw new DataAccessException("Error: Unauthorized");
+            }
+        }
+
         return user;
     }
 
     @Override
     public void deleteUser(String username) throws DataAccessException {
         UserData user = users.remove(username);
-        if (user == null) throw new DataAccessException(username + " not found, cannot delete");
+        //if (user == null) throw new DataAccessException("Error: Unauthorized");
     }
 
     @Override

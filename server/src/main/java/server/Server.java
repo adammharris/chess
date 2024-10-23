@@ -1,7 +1,10 @@
 package server;
 
+import service.ClearHandler;
+import service.GameHandler;
+import service.LoginHandler;
+import service.RegisterHandler;
 import spark.*;
-import handler.*;
 
 public class Server {
 
