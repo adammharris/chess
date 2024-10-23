@@ -31,7 +31,9 @@ public class LoginHandler extends HttpHandler {
     public Object logout(Request request, Response response) {
         String acceptHeader = request.headers("Accept");
         String res = validateAuthToken(request, response);
-        if (!res.equals("{}")) return res;
+        if (!res.equals("{}")) {
+            return res;
+        }
         AuthData logoutRequest = new AuthData(request.headers("Authorization"), "");
         AuthService logoutService = new AuthService();
         logoutService.deleteAuth(logoutRequest);

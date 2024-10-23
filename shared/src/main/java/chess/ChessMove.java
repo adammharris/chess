@@ -54,9 +54,15 @@ public class ChessMove {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null) return false;
-        if (this.getClass() != obj.getClass()) return false;
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (this.getClass() != obj.getClass()) {
+            return false;
+        }
         ChessMove newMove = (ChessMove) obj;
         return this.hashCode() ==  newMove.hashCode();
     }

@@ -85,7 +85,7 @@ class GameServiceTest {
 
         GameData updated = gameService.updateGame("WHITE", create.gameID(), request);
         assertNotNull(updated);
-        assertEquals(null, updated.whiteUsername());
+        assertNull(updated.whiteUsername());
     }
 
     @Test

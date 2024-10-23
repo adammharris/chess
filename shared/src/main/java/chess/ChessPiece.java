@@ -76,7 +76,9 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPiece thisPiece = board.getPiece(myPosition);
-        if (thisPiece == null) return new HashSet<>();
+        if (thisPiece == null) {
+            return new HashSet<>();
+        }
         ChessPiece.PieceType currentPiece = thisPiece.getPieceType();
         //HashSet<ChessMove> moves = new HashSet<>();
         return switch (currentPiece) {
@@ -109,7 +111,10 @@ public class ChessPiece {
 
     public Collection<ChessMove> teamPieceMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor thisTeam) {
         ChessPiece thisPiece = board.getPiece(myPosition);
-        if (thisPiece == null || thisPiece.getTeamColor() != thisTeam) return new HashSet<>();
+        if (thisPiece == null
+                || thisPiece.getTeamColor() != thisTeam) {
+            return new HashSet<>();
+        }
         ChessPiece.PieceType currentPiece = thisPiece.getPieceType();
         //HashSet<ChessMove> moves = new HashSet<>();
         return switch (currentPiece) {

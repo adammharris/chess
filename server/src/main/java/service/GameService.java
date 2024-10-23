@@ -44,14 +44,22 @@ public class GameService {
         String authToken = request.headers("Authorization");
         MemoryAuthDAO authDAO = MemoryAuthDAO.getInstance();
         String username = authDAO.getUsername(authToken);
-        if (playerColor == null) throw new DataAccessException("Error: Bad request");
-        if (game == null) throw new DataAccessException("Error: Bad request");
+        if (playerColor == null) {
+            throw new DataAccessException("Error: Bad request");
+        }
+        if (game == null) {
+            throw new DataAccessException("Error: Bad request");
+        }
         if (playerColor.equals("WHITE")) {
-            if (game.whiteUsername() != null) throw new DataAccessException("Error: Forbidden");
+            if (game.whiteUsername() != null) {
+                throw new DataAccessException("Error: Forbidden");
+            }
             updatedGame = new GameData(gameID, username, game.blackUsername(), game.gameName(), game.game());
             gameDAO.updateGame(updatedGame);
         } else if (playerColor.equals("BLACK")) {
-            if (game.blackUsername() != null) throw new DataAccessException("Error: Forbidden");
+            if (game.blackUsername() != null) {
+                throw new DataAccessException("Error: Forbidden");
+            }
             updatedGame = new GameData(gameID, game.whiteUsername(), username, game.gameName(), game.game());
             gameDAO.updateGame(updatedGame);
         }

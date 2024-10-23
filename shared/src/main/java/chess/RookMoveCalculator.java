@@ -7,46 +7,54 @@ public class RookMoveCalculator implements PieceMoveCalculator {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         HashSet<ChessMove> moves = new HashSet<>();
-        calculateRow(board, myPosition, moves, direction.UP);
-        calculateRow(board, myPosition, moves, direction.DOWN);
-        calculateRow(board, myPosition, moves, direction.LEFT);
-        calculateRow(board, myPosition, moves, direction.RIGHT);
+        calculateRow(board, myPosition, moves, Direction.UP);
+        calculateRow(board, myPosition, moves, Direction.DOWN);
+        calculateRow(board, myPosition, moves, Direction.LEFT);
+        calculateRow(board, myPosition, moves, Direction.RIGHT);
         return moves;
     }
-    public enum direction {
+    public enum Direction {
         UP,
         DOWN,
         LEFT,
         RIGHT
     }
-    private void calculateRow(ChessBoard board, ChessPosition position, HashSet<ChessMove> moves, direction dir) {
+    private void calculateRow(ChessBoard board, ChessPosition position, HashSet<ChessMove> moves, Direction dir) {
         switch (dir) {
             case UP:
                 for (int i = position.getRow() + 1; i <= 8; i++) {
                     ChessPosition newPos = new ChessPosition(i, position.getColumn());
                     boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
-                    if (foundPiece) break;
+                    if (foundPiece) {
+                        break;
+                    }
                 }
                 break;
             case DOWN:
                 for (int i = position.getRow() - 1; i >= 1; i--) {
                     ChessPosition newPos = new ChessPosition(i, position.getColumn());
                     boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
-                    if (foundPiece) break;
+                    if (foundPiece) {
+                        break;
+                    }
                 }
                 break;
             case LEFT:
                 for (int i = position.getColumn() - 1; i >= 1; i--) {
                     ChessPosition newPos = new ChessPosition(position.getRow(), i);
                     boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
-                    if (foundPiece) break;
+                    if (foundPiece) {
+                        break;
+                    }
                 }
                 break;
             case RIGHT:
                 for (int i = position.getColumn() + 1; i <= 8; i++) {
                     ChessPosition newPos = new ChessPosition(position.getRow(), i);
                     boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
-                    if (foundPiece) break;
+                    if (foundPiece) {
+                        break;
+                    }
                 }
                 break;
         }

@@ -10,7 +10,12 @@ public class ChessPosition {
     private final int row;
     private final int col;
     public ChessPosition(int row, int col) {
-        if (row < 1 || row > 8 || col < 1 || col > 8) throw new RuntimeException("Out of bounds!");
+        if (row < 1
+                || row > 8
+                || col < 1
+                || col > 8) {
+            throw new RuntimeException("Out of bounds!");
+        }
         this.row = row;
         this.col = col;
     }
@@ -38,9 +43,15 @@ public class ChessPosition {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null) return false;
-        if (this.getClass() != obj.getClass()) return false;
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (this.getClass() != obj.getClass()) {
+            return false;
+        }
         ChessPosition newPosition = (ChessPosition) obj;
         return this.row == newPosition.getRow() && this.col == newPosition.getColumn();
     }

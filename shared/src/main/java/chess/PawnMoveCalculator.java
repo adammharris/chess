@@ -30,7 +30,12 @@ public class PawnMoveCalculator implements PieceMoveCalculator {
     private boolean addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow) {
         int newRow = position.getRow() + addRow;
         int newCol = position.getColumn();
-        if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) return false;
+        if (newRow > 8
+                || newRow < 1
+                || newCol > 8
+                || newCol < 1) {
+            return false;
+        }
         ChessPosition newPos = new ChessPosition(newRow, newCol);
         ChessPiece atPos = board.getPiece(newPos);
         if (atPos == null) {
@@ -42,7 +47,12 @@ public class PawnMoveCalculator implements PieceMoveCalculator {
     private void addIfAttackable(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow, int addCol) {
         int newRow = position.getRow() + addRow;
         int newCol = position.getColumn() + addCol;
-        if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) return;
+        if (newRow > 8
+                || newRow < 1
+                || newCol > 8
+                || newCol < 1) {
+            return;
+        }
         ChessPosition newPos = new ChessPosition(newRow, newCol);
         ChessPiece atPos = board.getPiece(newPos);
         if (atPos != null) {
@@ -70,7 +80,9 @@ public class PawnMoveCalculator implements PieceMoveCalculator {
 
     private void addEnPassantMoves(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int direction) {
         ChessMove lastMove = board.getLastMove();
-        if (lastMove == null) return;
+        if (lastMove == null) {
+            return;
+        }
 
         ChessPosition lastStart = lastMove.getStartPosition();
         ChessPosition lastEnd = lastMove.getEndPosition();

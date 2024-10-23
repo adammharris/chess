@@ -8,10 +8,10 @@ import java.util.HashMap;
  */
 public class ChessBoard {
     private final HashMap<ChessPosition, ChessPiece> pieces = new HashMap<>();
-    private final static HashMap<ChessPosition, ChessPiece> defaultBoard = new HashMap<>();
+    private final static HashMap<ChessPosition, ChessPiece> DEFAULT_BOARD = new HashMap<>();
     private ChessMove lastMove;
     public ChessBoard() {
-        if (defaultBoard.isEmpty()) {
+        if (DEFAULT_BOARD.isEmpty()) {
             defineDefault();
         }
     }
@@ -24,29 +24,29 @@ public class ChessBoard {
 
 
     private void defineDefault() {
-        defaultBoard.put(new ChessPosition(1,1), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
-        defaultBoard.put(new ChessPosition(1,2), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT));
-        defaultBoard.put(new ChessPosition(1,3), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));
-        defaultBoard.put(new ChessPosition(1,4), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN));
-        defaultBoard.put(new ChessPosition(1,5), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING));
-        defaultBoard.put(new ChessPosition(1,6), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));
-        defaultBoard.put(new ChessPosition(1,7), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT));
-        defaultBoard.put(new ChessPosition(1,8), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
+        DEFAULT_BOARD.put(new ChessPosition(1,1), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
+        DEFAULT_BOARD.put(new ChessPosition(1,2), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT));
+        DEFAULT_BOARD.put(new ChessPosition(1,3), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));
+        DEFAULT_BOARD.put(new ChessPosition(1,4), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN));
+        DEFAULT_BOARD.put(new ChessPosition(1,5), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING));
+        DEFAULT_BOARD.put(new ChessPosition(1,6), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));
+        DEFAULT_BOARD.put(new ChessPosition(1,7), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT));
+        DEFAULT_BOARD.put(new ChessPosition(1,8), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
         for (int i = 1; i <= 8; i++) {
-            defaultBoard.put(new ChessPosition(2,i), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+            DEFAULT_BOARD.put(new ChessPosition(2,i), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
         }
 
         for (int i = 1; i <= 8; i++) {
-            defaultBoard.put(new ChessPosition(7,i), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
+            DEFAULT_BOARD.put(new ChessPosition(7,i), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
         }
-        defaultBoard.put(new ChessPosition(8,1), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
-        defaultBoard.put(new ChessPosition(8,2), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT));
-        defaultBoard.put(new ChessPosition(8,3), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP));
-        defaultBoard.put(new ChessPosition(8,4), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN));
-        defaultBoard.put(new ChessPosition(8,5), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING));
-        defaultBoard.put(new ChessPosition(8,6), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP));
-        defaultBoard.put(new ChessPosition(8,7), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT));
-        defaultBoard.put(new ChessPosition(8,8), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
+        DEFAULT_BOARD.put(new ChessPosition(8,1), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
+        DEFAULT_BOARD.put(new ChessPosition(8,2), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT));
+        DEFAULT_BOARD.put(new ChessPosition(8,3), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP));
+        DEFAULT_BOARD.put(new ChessPosition(8,4), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN));
+        DEFAULT_BOARD.put(new ChessPosition(8,5), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING));
+        DEFAULT_BOARD.put(new ChessPosition(8,6), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP));
+        DEFAULT_BOARD.put(new ChessPosition(8,7), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT));
+        DEFAULT_BOARD.put(new ChessPosition(8,8), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
 
     }
 
@@ -95,13 +95,16 @@ public class ChessBoard {
         ChessGame.TeamColor myColor;
         movePiece(move.getStartPosition(), move.getEndPosition());
         myPiece = getPiece(move.getEndPosition());
-        if (myPiece != null && myPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
+        if (myPiece != null
+                && myPiece.getPieceType() == ChessPiece.PieceType.PAWN) {
             // En Passant capture
             ChessMove lastMove = getLastMove();
             if (lastMove != null) {
                 ChessPosition lastEnd = lastMove.getEndPosition();
-                boolean isEnPassantCapture = Math.abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) == 1 &&
-                        Math.abs(move.getStartPosition().getRow() - move.getEndPosition().getRow()) == 1;
+                boolean isEnPassantCapture = Math.abs(move.getStartPosition().getColumn()
+                        - move.getEndPosition().getColumn()) == 1 &&
+                        Math.abs(move.getStartPosition().getRow()
+                                - move.getEndPosition().getRow()) == 1;
                 if (isEnPassantCapture) {
                     ChessPosition capturedPawnPosition = new ChessPosition(lastEnd.getRow(), move.getEndPosition().getColumn());
                     removePiece(capturedPawnPosition);
@@ -143,7 +146,9 @@ public class ChessBoard {
     public ChessPosition getPosition(ChessGame.TeamColor color, ChessPiece.PieceType type) {
         for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
             if (piece.getValue().getTeamColor() == color) {
-                if (piece.getValue().getPieceType() == type) return piece.getKey();
+                if (piece.getValue().getPieceType() == type) {
+                    return piece.getKey();
+                }
             }
         }
         return null;
@@ -155,7 +160,7 @@ public class ChessBoard {
      */
     public void resetBoard() {
         pieces.clear();
-        pieces.putAll(defaultBoard);
+        pieces.putAll(DEFAULT_BOARD);
     }
 
     @Override
@@ -184,9 +189,15 @@ public class ChessBoard {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null) return false;
-        if (this.getClass() != obj.getClass()) return false;
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (this.getClass() != obj.getClass()) {
+            return false;
+        }
         ChessBoard newBoard = (ChessBoard) obj;
         return this.hashCode() ==  newBoard.hashCode();
     }

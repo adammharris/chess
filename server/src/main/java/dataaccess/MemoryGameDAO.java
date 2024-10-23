@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 public class MemoryGameDAO implements GameDAO {
     private static MemoryGameDAO instance;
-    private HashMap<Integer, GameData> games = new HashMap<>();
+    private final HashMap<Integer, GameData> games = new HashMap<>();
     private MemoryGameDAO() {}
 
     public static MemoryGameDAO getInstance() {
@@ -20,7 +20,9 @@ public class MemoryGameDAO implements GameDAO {
     public GameData createGame(String gameName) throws DataAccessException {
         java.util.Random rand = new java.util.Random();
         GameData gameToAdd = new GameData(rand.nextInt(100000), null, null, gameName, new ChessGame());
-        if (games.get(gameToAdd.gameID()) != null) throw new DataAccessException("Already exists, cannot create");
+        if (games.get(gameToAdd.gameID()) != null) {
+            throw new DataAccessException("Already exists, cannot create");
+        }
         games.put(gameToAdd.gameID(), gameToAdd);
         return gameToAdd;
     }
@@ -28,14 +30,18 @@ public class MemoryGameDAO implements GameDAO {
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
         GameData game = games.get(gameID);
-        if (game == null) throw new DataAccessException("Error: Bad request");
+        if (game == null) {
+            throw new DataAccessException("Error: Bad request");
+        }
         return game;
     }
 
     @Override
     public void deleteGame(int gameID) throws DataAccessException {
         GameData auth = games.remove(gameID);
-        if (auth == null) throw new DataAccessException("Error: Bad request");
+        if (auth == null) {
+            throw new DataAccessException("Error: Bad request");
+        }
     }
 
     @Override
@@ -63,7 +69,9 @@ public class MemoryGameDAO implements GameDAO {
             previousGame = games.put(game.gameID(), game);
         }
 
-        if (previousGame == null) throw new DataAccessException("Error: Bad request");
+        if (previousGame == null) {
+            throw new DataAccessException("Error: Bad request");
+        }
     }
 
     public HashMap<Integer, GameData> getGames() {

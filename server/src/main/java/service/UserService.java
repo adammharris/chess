@@ -5,12 +5,8 @@ import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
 import model.AuthData;
 import model.UserData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class UserService {
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
-
     public AuthData register(UserData user) throws DataAccessException {
         MemoryUserDAO userDAO = MemoryUserDAO.getInstance();
         userDAO.createUser(user);
@@ -21,9 +17,6 @@ public class UserService {
         // Check if user exists
         MemoryUserDAO userDAO = MemoryUserDAO.getInstance();
         userDAO.getUser(user);
-
-        // Check if AuthData exists
-        MemoryAuthDAO authDAO = MemoryAuthDAO.getInstance();
 
         // Create new AuthData
         AuthService as = new AuthService();

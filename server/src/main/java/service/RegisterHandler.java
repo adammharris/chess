@@ -22,7 +22,7 @@ public class RegisterHandler extends HttpHandler {
             AuthData registerResult = registerService.register(registerRequest);
             return gson.toJson(registerResult);
         } catch (DataAccessException e) {
-            log.error("e: ", e);
+            //log.error("e: ", e);
             if (e.getMessage() != null) {
                 if (e.getMessage().equals("Error: Forbidden")) {
                     response.status(403);

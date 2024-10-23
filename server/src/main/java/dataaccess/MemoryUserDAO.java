@@ -5,7 +5,7 @@ import model.UserData;
 import java.util.HashMap;
 
 public class MemoryUserDAO implements UserDAO {
-    private HashMap<String, UserData> users = new HashMap<>();
+    private final HashMap<String, UserData> users = new HashMap<>();
     private static MemoryUserDAO instance;
 
     private MemoryUserDAO() {}
@@ -32,8 +32,12 @@ public class MemoryUserDAO implements UserDAO {
     @Override
     public UserData getUser(UserData loginRequest) throws DataAccessException {
         UserData user = users.get(loginRequest.username());
-        if (user == null) throw new DataAccessException("Error: Unauthorized");
-        if (loginRequest.password() == null) throw new DataAccessException("Error: Bad request");
+        if (user == null) {
+            throw new DataAccessException("Error: Unauthorized");
+        }
+        if (loginRequest.password() == null) {
+            throw new DataAccessException("Error: Bad request");
+        }
         if (user != null) {
             if (!loginRequest.password().equals(user.password())) {
                 throw new DataAccessException("Error: Unauthorized");

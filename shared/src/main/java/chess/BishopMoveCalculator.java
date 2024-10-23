@@ -5,7 +5,7 @@ import java.util.HashSet;
 
 public class BishopMoveCalculator implements PieceMoveCalculator {
 
-    public enum direction {
+    public enum Direction {
         UP_RIGHT,
         UP_LEFT,
         DOWN_RIGHT,
@@ -15,13 +15,13 @@ public class BishopMoveCalculator implements PieceMoveCalculator {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         HashSet<ChessMove> moves = new HashSet<>();
-        calculateRow(board, myPosition, moves, BishopMoveCalculator.direction.UP_RIGHT);
-        calculateRow(board, myPosition, moves, BishopMoveCalculator.direction.UP_LEFT);
-        calculateRow(board, myPosition, moves, BishopMoveCalculator.direction.DOWN_RIGHT);
-        calculateRow(board, myPosition, moves, BishopMoveCalculator.direction.DOWN_LEFT);
+        calculateRow(board, myPosition, moves, Direction.UP_RIGHT);
+        calculateRow(board, myPosition, moves, Direction.UP_LEFT);
+        calculateRow(board, myPosition, moves, Direction.DOWN_RIGHT);
+        calculateRow(board, myPosition, moves, Direction.DOWN_LEFT);
         return moves;
     }
-    private void calculateRow(ChessBoard board, ChessPosition position, HashSet<ChessMove> moves, BishopMoveCalculator.direction dir) {
+    private void calculateRow(ChessBoard board, ChessPosition position, HashSet<ChessMove> moves, Direction dir) {
         int j = position.getColumn();
         switch (dir) {
             case UP_RIGHT:
@@ -30,7 +30,9 @@ public class BishopMoveCalculator implements PieceMoveCalculator {
                     ChessPosition newPos = new ChessPosition(i, j);
                     boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
                     j++;
-                    if (foundPiece) break;
+                    if (foundPiece) {
+                        break;
+                    }
                 }
                 break;
             case UP_LEFT:
@@ -39,7 +41,9 @@ public class BishopMoveCalculator implements PieceMoveCalculator {
                     ChessPosition newPos = new ChessPosition(i, j);
                     boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
                     j--;
-                    if (foundPiece) break;
+                    if (foundPiece) {
+                        break;
+                    }
                 }
                 break;
             case DOWN_RIGHT:
@@ -48,7 +52,9 @@ public class BishopMoveCalculator implements PieceMoveCalculator {
                     ChessPosition newPos = new ChessPosition(i, j);
                     boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
                     j++;
-                    if (foundPiece) break;
+                    if (foundPiece) {
+                        break;
+                    }
                 }
                 break;
             case DOWN_LEFT:
@@ -57,7 +63,9 @@ public class BishopMoveCalculator implements PieceMoveCalculator {
                     ChessPosition newPos = new ChessPosition(i, j);
                     boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
                     j--;
-                    if (foundPiece) break;
+                    if (foundPiece) {
+                        break;
+                    }
                 }
                 break;
         }

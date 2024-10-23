@@ -12,7 +12,9 @@ public class GameHandler extends HttpHandler {
         String acceptHeader = request.headers("Accept");
 
         String res = validateAuthToken(request, response);
-        if (!res.equals("{}")) return res;
+        if (!res.equals("{}")) {
+            return res;
+        }
 
         Gson gson = new Gson();
         GameData createGameRequest = gson.fromJson(request.body(), GameData.class);
@@ -26,7 +28,9 @@ public class GameHandler extends HttpHandler {
         String acceptHeader = request.headers("Accept");
 
         String res = validateAuthToken(request, response);
-        if (!res.equals("{}")) return res;
+        if (!res.equals("{}")) {
+            return res;
+        }
 
         GameService listGameService = new GameService();
         Gson gson = new Gson();
@@ -37,7 +41,9 @@ public class GameHandler extends HttpHandler {
         String acceptHeader = request.headers("Accept");
 
         String res = validateAuthToken(request, response);
-        if (!res.equals("{}")) return res;
+        if (!res.equals("{}")) {
+            return res;
+        }
 
         GameService gs = new GameService();
 

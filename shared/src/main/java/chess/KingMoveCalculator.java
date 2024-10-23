@@ -26,7 +26,9 @@ public class KingMoveCalculator implements PieceMoveCalculator {
     private void addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow, int addCol) {
         int newRow = position.getRow() + addRow;
         int newCol = position.getColumn() + addCol;
-        if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) return;
+        if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) {
+            return;
+        }
         ChessPosition newPos = new ChessPosition(newRow, newCol);
         ChessPiece atPos = board.getPiece(newPos);
         if (atPos != null) {
@@ -56,48 +58,80 @@ public class KingMoveCalculator implements PieceMoveCalculator {
         4. Both your Rook and King will be safe after making the move (cannot be captured by any enemy pieces).
          */
         int currentRow = kingPosition.getRow();
-        if (!(kingPosition.getRow() == 8 || kingPosition.getRow() == 1) || board.getPiece(kingPosition).hasMoved) return false;
-        if (board.getPiece(kingPosition).hasMoved) return false;
+        if (!(kingPosition.getRow() == 8 || kingPosition.getRow() == 1) || board.getPiece(kingPosition).hasMoved) {
+            return false;
+        }
+        if (board.getPiece(kingPosition).hasMoved) {
+            return false;
+        }
         ChessPosition rookPosition = new ChessPosition(currentRow, 8);
-        if (board.getPiece(rookPosition) == null) return false;
-        if (board.getPiece(rookPosition).hasMoved) return false;
-        if (board.getPiece(rookPosition).getPieceType() != ChessPiece.PieceType.ROOK) return false;
+        if (board.getPiece(rookPosition) == null) {
+            return false;
+        }
+        if (board.getPiece(rookPosition).hasMoved) {
+            return false;
+        }
+        if (board.getPiece(rookPosition).getPieceType() != ChessPiece.PieceType.ROOK) {
+            return false;
+        }
 
         ChessPiece bishop = board.getPiece(new ChessPosition(kingPosition.getRow(), 6));
         ChessPiece knight = board.getPiece(new ChessPosition(kingPosition.getRow(), 7));
-        if (bishop != null || knight != null) return false;
+        if (bishop != null || knight != null) {
+            return false;
+        }
 
-        if (isInDanger(board, kingPosition, teamColor)) return false;
+        if (isInDanger(board, kingPosition, teamColor)) {
+            return false;
+        }
 
 
         ChessBoard simulate = new ChessBoard(board);
         simulate.movePiece(kingPosition, new ChessPosition(kingPosition.getRow(), 7));
         simulate.movePiece(new ChessPosition(kingPosition.getRow(), 8), new ChessPosition(kingPosition.getRow(), 6));
-        if (isInDanger(simulate, new ChessPosition(kingPosition.getRow(), 7), teamColor)) return false;
+        if (isInDanger(simulate, new ChessPosition(kingPosition.getRow(), 7), teamColor)) {
+            return false;
+        }
         return !isInDanger(simulate, new ChessPosition(kingPosition.getRow(), 6), teamColor);
     }
 
     private boolean canCastleQueenside(ChessBoard board, ChessPosition kingPosition, ChessGame.TeamColor teamColor) {
         int currentRow = kingPosition.getRow();
         if (!(kingPosition.getRow() == 8 || kingPosition.getRow() == 1) || board.getPiece(kingPosition).hasMoved) return false;
-        if (board.getPiece(kingPosition).hasMoved) return false;
+        if (board.getPiece(kingPosition).hasMoved) {
+            return false;
+        }
         ChessPosition rookPosition = new ChessPosition(currentRow, 1);
-        if (board.getPiece(rookPosition) == null) return false;
-        if (board.getPiece(rookPosition).hasMoved) return false;
-        if (board.getPiece(rookPosition).getPieceType() != ChessPiece.PieceType.ROOK) return false;
+        if (board.getPiece(rookPosition) == null) {
+            return false;
+        }
+        if (board.getPiece(rookPosition).hasMoved) {
+            return false;
+        }
+        if (board.getPiece(rookPosition).getPieceType() != ChessPiece.PieceType.ROOK) {
+            return false;
+        }
 
         ChessPosition queenPosition = new ChessPosition(kingPosition.getRow(), 4);
         ChessPosition bishopPosition = new ChessPosition(kingPosition.getRow(), 3);
         ChessPosition knightPosition = new ChessPosition(kingPosition.getRow(), 2);
-        if (board.getPiece(bishopPosition) != null || board.getPiece(knightPosition) != null || board.getPiece(queenPosition) != null) return false;
+        if (board.getPiece(bishopPosition) != null
+                || board.getPiece(knightPosition) != null
+                || board.getPiece(queenPosition) != null) {
+            return false;
+        }
 
-        if (isInDanger(board, kingPosition, teamColor)) return false;
+        if (isInDanger(board, kingPosition, teamColor)) {
+            return false;
+        }
 
 
         ChessBoard simulate = new ChessBoard(board);
         simulate.movePiece(kingPosition, knightPosition);
         simulate.movePiece(rookPosition, bishopPosition);
-        if (isInDanger(simulate, knightPosition, teamColor)) return false;
+        if (isInDanger(simulate, knightPosition, teamColor)) {
+            return false;
+        }
         return !isInDanger(simulate, bishopPosition, teamColor);
     }
 
@@ -108,11 +142,15 @@ public class KingMoveCalculator implements PieceMoveCalculator {
             if (piece == null) {
                 System.out.println(position);
             }
-            if (piece == null) return false;
+            if (piece == null) {
+                return false;
+            }
             if (piece.getTeamColor() != teamColor) {
                 Collection<ChessMove> moves = piece.pieceMoves(board, entry.getKey());
                 for (ChessMove move : moves) {
-                    if (board.getPiece(move.getStartPosition()).getTeamColor() == teamColor) continue;
+                    if (board.getPiece(move.getStartPosition()).getTeamColor() == teamColor) {
+                        continue;
+                    }
                     if (move.getEndPosition().equals(position)) {
                         return true;
                     }

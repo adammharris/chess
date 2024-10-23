@@ -55,7 +55,9 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece startPiece = board.getPiece(startPosition);
-        if (startPiece == null) return new HashSet<>();
+        if (startPiece == null) {
+            return new HashSet<>();
+        }
         Collection<ChessMove> moves = startPiece.pieceMoves(board, startPosition);
         TeamColor myTeamColor = board.getPiece(startPosition).getTeamColor();
         Iterator<ChessMove> iterator = moves.iterator();
@@ -69,7 +71,9 @@ public class ChessGame {
                 }
             }*/
             boolean afterInCheck = isInCheck(myTeamColor, simulateCheck);
-            if (afterInCheck) iterator.remove();
+            if (afterInCheck) {
+                iterator.remove();
+            }
         }
         return moves;
     }
@@ -82,10 +86,14 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPiece thisPiece = board.getPiece(move.getStartPosition());
-        if (thisPiece == null) throw new InvalidMoveException("Piece is null");
+        if (thisPiece == null) {
+            throw new InvalidMoveException("Piece is null");
+        }
 
         TeamColor thisColor = thisPiece.getTeamColor();
-        if (thisColor != currentTurn) throw new InvalidMoveException("Cannot move out of turn");
+        if (thisColor != currentTurn) {
+            throw new InvalidMoveException("Cannot move out of turn");
+        }
 
         Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
         boolean moveIsInValidMoves = false;
@@ -104,7 +112,9 @@ public class ChessGame {
         // Change turn
         if (currentTurn == TeamColor.BLACK) {
             currentTurn = TeamColor.WHITE;
-        } else currentTurn = TeamColor.BLACK;
+        } else {
+            currentTurn = TeamColor.BLACK;
+        }
     }
 
     /**
@@ -135,7 +145,9 @@ public class ChessGame {
         boolean isInCheck = false;
         ChessPosition kingPos = board.getPosition(teamColor, ChessPiece.PieceType.KING);
         for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
-            if (piece.getValue().getTeamColor() == teamColor) continue;
+            if (piece.getValue().getTeamColor() == teamColor) {
+                continue;
+            }
             Collection<ChessMove> moves = piece.getValue().pieceMoves(board, piece.getKey());
             for (ChessMove move : moves) {
                 if (move.getEndPosition().equals(kingPos)) {
@@ -143,7 +155,9 @@ public class ChessGame {
                     break;
                 }
             }
-            if (isInCheck) break;
+            if (isInCheck) {
+                break;
+            }
         }
 
         if (checkFor == ChessGameState.CHECK) {
@@ -154,7 +168,9 @@ public class ChessGame {
         boolean isCheckmate = true;
         boolean isStalemate = true;
         for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
-            if (piece.getValue().getTeamColor() != teamColor) continue;
+            if (piece.getValue().getTeamColor() != teamColor) {
+                continue;
+            }
             Collection<ChessMove> moves = validMoves(piece.getKey());
             for (ChessMove move : moves) {
                 ChessBoard simulateCheck = new ChessBoard(board);
