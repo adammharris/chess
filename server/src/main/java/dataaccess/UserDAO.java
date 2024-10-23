@@ -19,13 +19,6 @@ public interface UserDAO {
     UserData getUser(UserData user) throws DataAccessException;
 
     /**
-     * Deletes user from database
-     * @param username Unique string representing user
-     * @throws DataAccessException Throws if username is not found
-     */
-    void deleteUser(String username) throws DataAccessException;
-
-    /**
      * Deletes all users from database
      */
     void clear();

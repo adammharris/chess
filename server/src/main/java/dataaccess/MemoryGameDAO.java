@@ -55,7 +55,11 @@ public class MemoryGameDAO implements GameDAO {
         MemoryAuthDAO authDAO = MemoryAuthDAO.getInstance();
         if (game.whiteUsername() != null) {
             if (game.whiteUsername().length() == 36) {
-                updatedGame = new GameData(game.gameID(), authDAO.getUsername(game.whiteUsername()), game.blackUsername(), game.gameName(), game.game());
+                updatedGame = new GameData(game.gameID(),
+                        authDAO.getUsername(game.whiteUsername()),
+                        game.blackUsername(),
+                        game.gameName(),
+                        game.game());
             } else if (game.blackUsername() != null) {
                 if (game.blackUsername().length() == 36) {
                     updatedGame = new GameData(game.gameID(), game.whiteUsername(), authDAO.getUsername(game.blackUsername()), game.gameName(), game.game());

@@ -108,40 +108,4 @@ public class ChessPiece {
             }
         };
     }
-
-    public Collection<ChessMove> teamPieceMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor thisTeam) {
-        ChessPiece thisPiece = board.getPiece(myPosition);
-        if (thisPiece == null
-                || thisPiece.getTeamColor() != thisTeam) {
-            return new HashSet<>();
-        }
-        ChessPiece.PieceType currentPiece = thisPiece.getPieceType();
-        //HashSet<ChessMove> moves = new HashSet<>();
-        return switch (currentPiece) {
-            case KING -> {
-                KingMoveCalculator k = new KingMoveCalculator();
-                yield k.pieceMoves(board, myPosition);
-            }
-            case QUEEN -> {
-                QueenMoveCalculator q = new QueenMoveCalculator();
-                yield q.pieceMoves(board, myPosition);
-            }
-            case BISHOP -> {
-                BishopMoveCalculator b = new BishopMoveCalculator();
-                yield b.pieceMoves(board, myPosition);
-            }
-            case KNIGHT -> {
-                KnightMoveCalculator n = new KnightMoveCalculator();
-                yield n.pieceMoves(board, myPosition);
-            }
-            case ROOK -> {
-                RookMoveCalculator r = new RookMoveCalculator();
-                yield r.pieceMoves(board, myPosition);
-            }
-            case PAWN -> {
-                PawnMoveCalculator p = new PawnMoveCalculator();
-                yield p.pieceMoves(board, myPosition);
-            }
-        };
-    }
 }

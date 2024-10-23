@@ -97,7 +97,11 @@ public class KingMoveCalculator implements PieceMoveCalculator {
 
     private boolean canCastleQueenside(ChessBoard board, ChessPosition kingPosition, ChessGame.TeamColor teamColor) {
         int currentRow = kingPosition.getRow();
-        if (!(kingPosition.getRow() == 8 || kingPosition.getRow() == 1) || board.getPiece(kingPosition).hasMoved) return false;
+        if (!(kingPosition.getRow() == 8
+                || kingPosition.getRow() == 1)
+                || board.getPiece(kingPosition).hasMoved) {
+            return false;
+        }
         if (board.getPiece(kingPosition).hasMoved) {
             return false;
         }

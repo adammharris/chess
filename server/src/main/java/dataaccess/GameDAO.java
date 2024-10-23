@@ -20,13 +20,6 @@ public interface GameDAO {
     GameData getGame(int gameID) throws DataAccessException;
 
     /**
-     * Removes game from database given gameID
-     * @param gameID Unique identifier for game
-     * @throws DataAccessException Throws if no game with gameID is found
-     */
-    void deleteGame(int gameID) throws DataAccessException;
-
-    /**
      * Updates game in database.
      * @param game GameData object representing updated game
      * @throws DataAccessException Throws if no game with gameID is found
