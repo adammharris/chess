@@ -3,6 +3,7 @@ package dataaccess;
 import chess.ChessGame;
 import model.GameData;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class MemoryGameDAO implements GameDAO {
     private static MemoryGameDAO instance;
@@ -54,16 +55,16 @@ public class MemoryGameDAO implements GameDAO {
                         game.game());
             } else if (game.blackUsername() != null) {
                 if (game.blackUsername().length() == 36) {
-                    updatedGame = new GameData(game.gameID(), game.whiteUsername(), authDAO.getUsername(game.blackUsername()), game.gameName(), game.game());
+                    updatedGame = new GameData(game.gameID(),
+                            game.whiteUsername(),
+                            authDAO.getUsername(game.blackUsername()),
+                            game.gameName(),
+                            game.game());
                 }
             }
         }
         GameData previousGame;
-        if (updatedGame != null) {
-            previousGame = games.put(game.gameID(), updatedGame);
-        } else {
-            previousGame = games.put(game.gameID(), game);
-        }
+        previousGame = games.put(game.gameID(), Objects.requireNonNullElse(updatedGame, game));
 
         if (previousGame == null) {
             throw new DataAccessException("Error: Bad request");
