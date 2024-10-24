@@ -4,26 +4,21 @@ import dataaccess.DataAccessException;
 import dataaccess.MemoryUserDAO;
 import model.AuthData;
 import model.UserData;
-import org.eclipse.jetty.server.Authentication;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import server.Server;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserServiceTest {
+class UserServiceTest extends ServiceTest {
 
-    private static Server server;
     private static UserService userService;
     private static UserData existingUser;
     private static UserData newUser;
 
     @BeforeAll
     public static void init() {
-        server = new Server();
-        var port = server.run(8080);
-        System.out.println("Started test HTTP server on " + port);
+        startServer();
 
         userService = new UserService();
         existingUser = new UserData("ExistingUser", "existingUserPassword", "eu@mail.com");
@@ -32,8 +27,9 @@ class UserServiceTest {
 
     @AfterAll
     static void stopServer() {
-        server.stop();
+        myServer.stop();
     }
+
     @Test
     void register() throws DataAccessException {
         AuthData auth = userService.register(newUser);

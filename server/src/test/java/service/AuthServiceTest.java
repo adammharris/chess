@@ -4,32 +4,25 @@ import dataaccess.DataAccessException;
 import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import server.Server;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AuthServiceTest {
+class AuthServiceTest extends ServiceTest {
 
-    private static Server server;
-
-    private String existingAuth;
     private static UserData existingUser;
     private static UserData newUser;
     private static AuthService authService;
 
     @AfterAll
-    static void stopServer() {
-        server.stop();
+    static void stop() {
+        myServer.stop();
     }
 
     @BeforeAll
     public static void init() {
-        server = new Server();
-        var port = server.run(8080);
-        System.out.println("Started test HTTP server on " + port);
+        startServer();
 
         authService = new AuthService();
         existingUser = new UserData("ExistingUser", "existingUserPassword", "eu@mail.com");

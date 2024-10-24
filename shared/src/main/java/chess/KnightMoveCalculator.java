@@ -24,7 +24,8 @@ public class KnightMoveCalculator implements PieceMoveCalculator {
         addMoveIfValid(board, moves, myPosition, 2, -1);
         return moves;
     }
-    private void addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow, int addCol) {
+
+    protected void addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow, int addCol) {
         int newRow = position.getRow() + addRow;
         int newCol = position.getColumn() + addCol;
         if (newRow > 8 || newRow < 1 || newCol > 8 || newCol < 1) {

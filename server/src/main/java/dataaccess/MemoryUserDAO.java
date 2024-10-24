@@ -38,10 +38,8 @@ public class MemoryUserDAO implements UserDAO {
         if (loginRequest.password() == null) {
             throw new DataAccessException("Error: Bad request");
         }
-        if (user != null) {
-            if (!loginRequest.password().equals(user.password())) {
-                throw new DataAccessException("Error: Unauthorized");
-            }
+        if (!loginRequest.password().equals(user.password())) {
+            throw new DataAccessException("Error: Unauthorized");
         }
 
         return user;

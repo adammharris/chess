@@ -20,11 +20,12 @@ public class RookMoveCalculator implements PieceMoveCalculator {
         RIGHT
     }
     private void calculateRow(ChessBoard board, ChessPosition position, HashSet<ChessMove> moves, Direction dir) {
+        BishopMoveCalculator bmc = new BishopMoveCalculator();
         switch (dir) {
             case UP:
                 for (int i = position.getRow() + 1; i <= 8; i++) {
                     ChessPosition newPos = new ChessPosition(i, position.getColumn());
-                    boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
+                    boolean foundPiece = bmc.addMoveIfValid(board, moves, position, newPos);
                     if (foundPiece) {
                         break;
                     }
@@ -33,7 +34,7 @@ public class RookMoveCalculator implements PieceMoveCalculator {
             case DOWN:
                 for (int i = position.getRow() - 1; i >= 1; i--) {
                     ChessPosition newPos = new ChessPosition(i, position.getColumn());
-                    boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
+                    boolean foundPiece = bmc.addMoveIfValid(board, moves, position, newPos);
                     if (foundPiece) {
                         break;
                     }
@@ -42,7 +43,8 @@ public class RookMoveCalculator implements PieceMoveCalculator {
             case LEFT:
                 for (int i = position.getColumn() - 1; i >= 1; i--) {
                     ChessPosition newPos = new ChessPosition(position.getRow(), i);
-                    boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
+
+                    boolean foundPiece = bmc.addMoveIfValid(board, moves, position, newPos);
                     if (foundPiece) {
                         break;
                     }
@@ -51,25 +53,12 @@ public class RookMoveCalculator implements PieceMoveCalculator {
             case RIGHT:
                 for (int i = position.getColumn() + 1; i <= 8; i++) {
                     ChessPosition newPos = new ChessPosition(position.getRow(), i);
-                    boolean foundPiece = addMoveIfValid(board, moves, position, newPos);
+                    boolean foundPiece = bmc.addMoveIfValid(board, moves, position, newPos);
                     if (foundPiece) {
                         break;
                     }
                 }
                 break;
         }
-
-    }
-    private boolean addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, ChessPosition newPos) {
-        ChessPiece atPos = board.getPiece(newPos);
-        if (atPos != null) {
-            if (atPos.getTeamColor() != board.getPiece(position).getTeamColor()) {
-                moves.add(new ChessMove(position, newPos));
-            }
-            return true;
-        } else {
-            moves.add(new ChessMove(position, newPos));
-        }
-        return false;
     }
 }

@@ -71,7 +71,7 @@ public class BishopMoveCalculator implements PieceMoveCalculator {
         }
 
     }
-    private boolean addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, ChessPosition newPos) {
+    protected boolean addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, ChessPosition newPos) {
         ChessPiece atPos = board.getPiece(newPos);
         if (atPos != null) {
             if (atPos.getTeamColor() != board.getPiece(position).getTeamColor()) {

@@ -38,7 +38,7 @@ public class ChessMove {
 
     @Override
     public String toString() {
-        String moveString = "";
+        String moveString;
         if (promotion != null) {
             moveString = "Start: (%s), End: (%s), Promo: %s".formatted(start, end, promotion);
         } else {
@@ -54,26 +54,15 @@ public class ChessMove {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
         if (obj == null) {
             return false;
-        }
-        if (this.getClass() != obj.getClass()) {
+        } else if (obj == this) {
+            return true;
+        } else if (this.getClass() != obj.getClass()) {
             return false;
+        } else {
+            ChessMove newMove = (ChessMove) obj;
+            return this.hashCode() ==  newMove.hashCode();
         }
-        ChessMove newMove = (ChessMove) obj;
-        return this.hashCode() ==  newMove.hashCode();
-    }
-
-    /**
-     * Gets the type of piece to promote a pawn to if pawn promotion is part of this
-     * chess move
-     *
-     * @return Type of piece to promote a pawn to, or null if no promotion
-     */
-    public ChessPiece.PieceType getPromotionPiece() {
-        return promotion;
     }
 }
