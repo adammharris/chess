@@ -3,12 +3,10 @@ package service;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
 import model.AuthData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AuthService {
 
-    AuthData createAuth(String username) throws DataAccessException {
+    AuthData createAuth(String username) {
         MemoryAuthDAO authDAO = MemoryAuthDAO.getInstance();
         AuthData auth;
         auth = authDAO.createAuth(username);
@@ -21,6 +19,7 @@ public class AuthService {
         } catch (DataAccessException e) {
 
         }
+
     }
     public boolean validateAuthToken(String authToken) {
         MemoryAuthDAO authDAO = MemoryAuthDAO.getInstance();
