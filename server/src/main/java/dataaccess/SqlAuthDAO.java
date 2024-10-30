@@ -2,11 +2,10 @@ package dataaccess;
 
 import com.google.gson.Gson;
 import model.AuthData;
-
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class SqlAuthDAO implements AuthDAO {
+public class SqlAuthDAO extends SqlDAO implements AuthDAO {
     private static SqlAuthDAO instance;
     private SqlAuthDAO() {}
     private static Gson gson = new Gson();
@@ -30,8 +29,8 @@ public class SqlAuthDAO implements AuthDAO {
     public AuthData createAuth(String username) throws DataAccessException {
         AuthData newAuth = new AuthData(UUID.randomUUID().toString(), username);
         try (var conn = DatabaseManager.getConnection()) {
-            var json = gson.toJson(newAuth);
-            var statement = "INSERT INTO chess (authToken, username, json) VALUES (%s, %s, %s)".formatted(newAuth.authToken(), username, json);
+            var auth = gson.toJson(newAuth);
+            var statement = "INSERT INTO chess (authToken, username, auth) VALUES (%s, %s, %s)".formatted(newAuth.authToken(), username, auth);
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeQuery();
             }
@@ -49,11 +48,11 @@ public class SqlAuthDAO implements AuthDAO {
         }
         AuthData auth = null;
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authToken, json FROM chess WHERE authToken=%s".formatted(authToken);
+            var statement = "SELECT authToken, auth FROM chess WHERE authToken=%s".formatted(authToken);
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 try (var result = preparedStatement.executeQuery()) {
                     if (result.next()) {
-                        auth = gson.fromJson(result.getString("json"), AuthData.class);
+                        auth = gson.fromJson(result.getString("auth"), AuthData.class);
                     }
                 }
             }
@@ -76,19 +75,6 @@ public class SqlAuthDAO implements AuthDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void clear() {
-        try (var conn = DatabaseManager.getConnection()) {
-            var statement = "TRUNCATE chess";
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.executeQuery();
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-        //TODO: auths.clear();
     }
 
     public String getUsername(String authToken) throws DataAccessException {
