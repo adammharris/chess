@@ -1,5 +1,6 @@
 package server;
 
+import dataaccess.DatabaseManager;
 import service.ClearHandler;
 import service.GameHandler;
 import service.LoginHandler;
