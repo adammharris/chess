@@ -1,22 +1,13 @@
 package dataaccess;
 
-import com.google.gson.Gson;
 import model.AuthData;
 import java.sql.SQLException;
 import java.util.UUID;
 
+//TODO: abstract SQL access into SqlDAO
 public class SqlAuthDAO extends SqlDAO implements AuthDAO {
     private static SqlAuthDAO instance;
     private SqlAuthDAO() {}
-    private static Gson gson = new Gson();
-
-    static {
-        try {
-            DatabaseManager.createDatabase();
-        } catch (Exception e) {
-            throw new RuntimeException("Database setup failed:" + e);
-        }
-    }
 
     public static SqlAuthDAO getInstance() {
         if (instance == null) {
@@ -37,7 +28,6 @@ public class SqlAuthDAO extends SqlDAO implements AuthDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        //TODO: auths.put(newAuth.authToken(), newAuth);
         return newAuth;
     }
 

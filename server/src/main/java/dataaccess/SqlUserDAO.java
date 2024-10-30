@@ -1,21 +1,13 @@
 package dataaccess;
 
-import com.google.gson.Gson;
 import model.UserData;
 import java.sql.SQLException;
 
+//TODO: abstract SQL access into SqlDao
 public class SqlUserDAO extends SqlDAO implements UserDAO {
     private static SqlUserDAO instance;
     private SqlUserDAO() {}
-    private static Gson gson = new Gson();
 
-    static {
-        try {
-            DatabaseManager.createDatabase();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
     public static SqlUserDAO getInstance() {
         if (instance == null) {
             instance = new SqlUserDAO();
@@ -25,13 +17,6 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
 
     @Override
     public void createUser(UserData user) throws DataAccessException {
-        UserData currentUser = getUser(user);
-        if (currentUser != null) {
-            if (currentUser.equals(user)) {
-                throw new DataAccessException("Error: Forbidden");
-            }
-        }
-        //TODO: users.put(user.username(), user);
         try (var conn = DatabaseManager.getConnection()) {
             var json = gson.toJson(user);
             var statement = "INSERT INTO chess (username, password, email, user) VALUES ";
@@ -62,6 +47,7 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
 
         if (user == null) {
             throw new DataAccessException("Error: Unauthorized");
