@@ -58,7 +58,7 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
     public void updateGame(GameData game) throws DataAccessException {
         GameData updatedGame = null;
         getGame(game.gameID());
-        MemoryAuthDAO authDAO = MemoryAuthDAO.getInstance();
+        SqlAuthDAO authDAO = SqlAuthDAO.getInstance();
         if (game.whiteUsername() != null) {
             if (game.whiteUsername().length() == 36) {
                 updatedGame = new GameData(game.gameID(),
@@ -77,7 +77,22 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
             }
         }
         GameData previousGame = null;
+        if (updatedGame == null) {
+            throw new DataAccessException("Error: Bad request");
+        }
 
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "INSERT INTO chess (gameName, gameID, game) VALUES (%s, %s, %s)".formatted(
+                    updatedGame.gameName(),
+                    updatedGame.gameID(),
+                    updatedGame
+            );
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.executeQuery();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         //TODO: previousGame = games.put(game.gameID(), Objects.requireNonNullElse(updatedGame, game));
 
         if (previousGame == null) {
@@ -86,7 +101,17 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
     }
 
     public HashMap<Integer, GameData> getGames() {
-        // TODO: form Hashmap from results of query
+        java.sql.ResultSet games;
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT game FROM chess";
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                games = preparedStatement.executeQuery();
+            }
+        } catch (DataAccessException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+        //TODO: create Hashmap from ResultSet
+
         return new HashMap<>();
     }
 }
