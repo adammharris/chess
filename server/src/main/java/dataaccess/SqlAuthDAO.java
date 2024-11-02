@@ -1,6 +1,8 @@
 package dataaccess;
 
 import model.AuthData;
+
+import javax.xml.crypto.Data;
 import java.sql.SQLException;
 import java.util.UUID;
 
@@ -17,7 +19,7 @@ public class SqlAuthDAO extends SqlDAO implements AuthDAO {
     }
 
     @Override
-    public AuthData createAuth(String username) throws DataAccessException {
+    public AuthData createAuth(String username) {
         AuthData newAuth = new AuthData(UUID.randomUUID().toString(), username);
         try (var conn = DatabaseManager.getConnection()) {
             var auth = gson.toJson(newAuth);
@@ -25,7 +27,7 @@ public class SqlAuthDAO extends SqlDAO implements AuthDAO {
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeQuery();
             }
-        } catch (SQLException e) {
+        } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
         }
         return newAuth;

@@ -2,6 +2,8 @@ package service;
 
 import dataaccess.DataAccessException;
 import dataaccess.MemoryGameDAO;
+import dataaccess.MemoryUserDAO;
+import dataaccess.SqlGameDAO;
 import model.GameData;
 import spark.Request;
 
@@ -20,6 +22,7 @@ public class GameService {
 
         return newGame;
     }
+
     public GameData getGame(int gameID) {
         GameData game;
         try {
@@ -29,6 +32,7 @@ public class GameService {
         }
         return game;
     }
+
     public GameData[] listGames() {
         HashMap<Integer, GameData> games = gameDAO.getGames();
         return games.values().toArray(new GameData[0]);
@@ -39,12 +43,14 @@ public class GameService {
         GameData updatedGame;
         String authToken = request.headers("Authorization");
         String username = AuthService.authDAO.getUsername(authToken);
+
         if (playerColor == null) {
             throw new DataAccessException("Error: Bad request");
         }
         if (game == null) {
             throw new DataAccessException("Error: Bad request");
         }
+
         if (playerColor.equals("WHITE")) {
             if (game.whiteUsername() != null) {
                 throw new DataAccessException("Error: Forbidden");
@@ -58,6 +64,7 @@ public class GameService {
             updatedGame = new GameData(gameID, game.whiteUsername(), username, game.gameName(), game.game());
             gameDAO.updateGame(updatedGame);
         }
+
         return game;
     }
 

@@ -2,6 +2,7 @@ package service;
 
 import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthDAO;
+import dataaccess.SqlAuthDAO;
 import model.AuthData;
 
 public class AuthService {
@@ -12,14 +13,15 @@ public class AuthService {
         auth = authDAO.createAuth(username);
         return auth;
     }
+
     public void deleteAuth(AuthData user) {
         try {
             authDAO.deleteAuth(user.authToken());
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-
     }
+
     public boolean validateAuthToken(String authToken) {
         try {
             authDAO.getUsername(authToken);
