@@ -7,7 +7,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SqlAuthDAOTest {
-    SqlAuthDAO authDAO = SqlAuthDAO.getInstance();
+    private final static SqlAuthDAO authDAO = SqlAuthDAO.getInstance();
+
     @BeforeEach
     void setUp() {
         authDAO.clear();
@@ -23,7 +24,7 @@ class SqlAuthDAOTest {
     @Test
     void testGetAuth() {
         AuthData auth1 = authDAO.createAuth("username");
-        AuthData auth2 = null;
+        AuthData auth2;
         try {
             auth2 = authDAO.getAuth(auth1.authToken());
         } catch (DataAccessException e) {
@@ -38,17 +39,16 @@ class SqlAuthDAOTest {
         AuthData auth = authDAO.createAuth("username");
         assertDoesNotThrow(() -> authDAO.deleteAuth(auth.authToken()));
         AuthData auth2 = null;
-        try {
-            auth2 = authDAO.getAuth(auth.authToken());
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+        assertThrows(DataAccessException.class, () -> authDAO.getAuth(auth.authToken()));
         assertNull(auth2);
     }
 
     @Test
     void testClear() {
-        //TODO: actually test this
-        assertTrue(false);
+        AuthData auth1 = authDAO.createAuth("username1");
+        AuthData auth2 = authDAO.createAuth("username2");
+        authDAO.clear();
+        assertThrows(DataAccessException.class, () -> authDAO.getAuth(auth1.authToken()));
+        assertThrows(DataAccessException.class, () -> authDAO.getAuth(auth2.authToken()));
     }
 }

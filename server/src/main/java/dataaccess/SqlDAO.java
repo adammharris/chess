@@ -17,9 +17,9 @@ public abstract class SqlDAO {
 
     public void clear() {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "TRUNCATE chess";
+            var statement = "TRUNCATE auths"; //TODO: What is a proper abstraction of clear?
             try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.executeQuery();
+                preparedStatement.executeUpdate();
             }
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
