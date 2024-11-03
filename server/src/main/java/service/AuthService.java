@@ -1,12 +1,11 @@
 package service;
 
 import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthDAO;
 import dataaccess.SqlAuthDAO;
 import model.AuthData;
 
 public class AuthService {
-    static MemoryAuthDAO authDAO = MemoryAuthDAO.getInstance();
+    static SqlAuthDAO authDAO = SqlAuthDAO.getInstance();
 
     AuthData createAuth(String username) {
         AuthData auth;

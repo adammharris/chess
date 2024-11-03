@@ -52,7 +52,7 @@ public class SqlAuthDAO extends SqlDAO implements AuthDAO {
         }
         AuthData auth = null;
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authToken, auth FROM auths WHERE authToken=%s".formatted(authToken);
+            var statement = "SELECT authToken, auth FROM auths WHERE authToken='%s'".formatted(authToken); //TODO: String can be unsafe?
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 try (var result = preparedStatement.executeQuery()) {
                     if (result.next()) {
@@ -72,7 +72,7 @@ public class SqlAuthDAO extends SqlDAO implements AuthDAO {
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "DELETE FROM auths WHERE authToken=%s".formatted(authToken);
+            var statement = "DELETE FROM auths WHERE authToken='%s'".formatted(authToken); //TODO: String can be unsafe?
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             }
