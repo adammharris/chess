@@ -20,7 +20,7 @@ public interface AuthDAO {
 
     /**
      * Removes auth from database given authToken
-     * @param authToken
+     * @param authToken identifier for auth
      * @throws DataAccessException Throws if deletion fails
      */
     void deleteAuth(String authToken) throws DataAccessException;

@@ -7,7 +7,7 @@ import model.AuthData;
 public class AuthService {
     static SqlAuthDAO authDAO = SqlAuthDAO.getInstance();
 
-    AuthData createAuth(String username) {
+    AuthData createAuth(String username) throws DataAccessException {
         AuthData auth;
         auth = authDAO.createAuth(username);
         return auth;

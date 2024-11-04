@@ -16,15 +16,25 @@ class SqlAuthDAOTest {
 
     @Test
     void testCreateAuth() {
-        AuthData result = authDAO.createAuth("username");
+        final AuthData result;
+        try {
+            result = authDAO.createAuth("username");
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         assertNotNull(result);
         assertEquals(result.username(), "username");
     }
 
     @Test
     void testGetAuth() {
-        AuthData auth1 = authDAO.createAuth("username");
-        AuthData auth2;
+        final AuthData auth1;
+        try {
+            auth1 = authDAO.createAuth("username");
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+        final AuthData auth2;
         try {
             auth2 = authDAO.getAuth(auth1.authToken());
         } catch (DataAccessException e) {
@@ -36,17 +46,29 @@ class SqlAuthDAOTest {
 
     @Test
     void testDeleteAuth() {
-        AuthData auth = authDAO.createAuth("username");
+        final AuthData auth;
+        try {
+            auth = authDAO.createAuth("username");
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         assertDoesNotThrow(() -> authDAO.deleteAuth(auth.authToken()));
-        AuthData auth2 = null;
+        //AuthData auth2 = null;
         assertThrows(DataAccessException.class, () -> authDAO.getAuth(auth.authToken()));
-        assertNull(auth2);
+        //assertNull(auth2);
     }
 
     @Test
     void testClear() {
-        AuthData auth1 = authDAO.createAuth("username1");
-        AuthData auth2 = authDAO.createAuth("username2");
+        final AuthData auth1;
+        final AuthData auth2;
+        try {
+            auth1 = authDAO.createAuth("username1");
+            auth2 = authDAO.createAuth("username2");
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
         authDAO.clear();
         assertThrows(DataAccessException.class, () -> authDAO.getAuth(auth1.authToken()));
         assertThrows(DataAccessException.class, () -> authDAO.getAuth(auth2.authToken()));

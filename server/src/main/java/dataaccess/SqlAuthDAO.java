@@ -8,19 +8,7 @@ import java.util.UUID;
 public class SqlAuthDAO extends SqlDAO implements AuthDAO {
     private static SqlAuthDAO instance;
     private SqlAuthDAO() {
-        setupTable();
-    }
-
-    private static void setupTable() {
-        tableName = "auths";
-        try (var conn = DatabaseManager.getConnection()) {
-            var statement = "CREATE TABLE IF NOT EXISTS auths (authToken VARCHAR(36), username VARCHAR(128), auth JSON)";
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
-            }
-        } catch (SQLException | DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+        setTable("auths", "(authToken VARCHAR(36), username VARCHAR(128), auth JSON)");
     }
 
     public static SqlAuthDAO getInstance() {
@@ -31,7 +19,7 @@ public class SqlAuthDAO extends SqlDAO implements AuthDAO {
     }
 
     @Override
-    public AuthData createAuth(String username) {
+    public AuthData createAuth(String username) throws DataAccessException {
         AuthData newAuth = new AuthData(UUID.randomUUID().toString(), username);
         var auth = gson.toJson(newAuth);
         create(new String[]{"authToken", "username", "auth"}, new String[]{newAuth.authToken(), username, auth});

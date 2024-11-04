@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public abstract class SqlDAO {
     protected static Gson gson = new Gson();
-    protected static String tableName;
+    protected String table;
 
     static {
         try {
@@ -16,9 +16,10 @@ public abstract class SqlDAO {
         }
     }
 
-    public void clear() {
+    protected void setTable(String tn, String sqlTableDescription) {
+        table = tn;
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "TRUNCATE " + tableName; //TODO: String can be unsafe?
+            var statement = "CREATE TABLE IF NOT EXISTS %s %s".formatted(table, sqlTableDescription);
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             }
@@ -27,9 +28,20 @@ public abstract class SqlDAO {
         }
     }
 
-    public static void delete(String key, String value) throws DataAccessException {
+    public void clear() {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "DELETE FROM %s WHERE %s='%s'".formatted(tableName, key, value); //TODO: String can be unsafe?
+            var statement = "TRUNCATE " + table; //TODO: String can be unsafe?
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected void delete(String key, String value) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "DELETE FROM %s WHERE %s='%s'".formatted(table, key, value); //TODO: String can be unsafe?
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             }
@@ -38,8 +50,8 @@ public abstract class SqlDAO {
         }
     }
 
-    public static void create(String[] keys, String[] values) {
-        String statement = "INSERT INTO %s (".formatted(tableName);
+    protected void create(String[] keys, String[] values) throws DataAccessException {
+        String statement = "INSERT INTO %s (".formatted(table);
         for (String key : keys) {
             statement = statement.concat(key + ", ");
         }
@@ -53,18 +65,18 @@ public abstract class SqlDAO {
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             }
-        } catch (SQLException | DataAccessException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static <T> T get(String keyIdentifier, String valueIdentifier, String keyGet, Class<T> classOfT) throws DataAccessException {
+    protected <T> T get(String keyIdentifier, String valueIdentifier, String keyGet, Class<T> classOfT) throws DataAccessException {
         if (keyIdentifier == null) {
             throw new DataAccessException("Error: Bad request");
         }
         T rec = null;
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT %s, %s FROM %s WHERE %s='%s'".formatted(keyIdentifier, keyGet, tableName, keyIdentifier, valueIdentifier);
+            var statement = "SELECT %s, %s FROM %s WHERE %s='%s'".formatted(keyIdentifier, keyGet, table, keyIdentifier, valueIdentifier);
             //TODO: String can be unsafe?
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 try (var result = preparedStatement.executeQuery()) {
@@ -77,7 +89,7 @@ public abstract class SqlDAO {
             throw new RuntimeException(e);
         }
         if (rec == null) {
-            throw new DataAccessException("Error: Not found");
+            throw new DataAccessException("Error: Unauthorized");
         }
         return rec;
     }

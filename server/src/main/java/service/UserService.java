@@ -2,14 +2,16 @@ package service;
 
 import dataaccess.DataAccessException;
 import dataaccess.MemoryUserDAO;
+import dataaccess.SqlUserDAO;
 import model.AuthData;
 import model.UserData;
 
 public class UserService {
-    private final static MemoryUserDAO userDAO = MemoryUserDAO.getInstance();
+    private final static SqlUserDAO userDAO = SqlUserDAO.getInstance();
 
     public AuthData register(UserData user) throws DataAccessException {
         userDAO.createUser(user);
+        //UserData currentUser = userDAO.getUser()
         return login(user);
     }
 

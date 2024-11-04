@@ -6,7 +6,7 @@ public interface UserDAO {
     /**
      * Adds user to database
      * @param user UserData object representing user
-     * @throws DataAccessException Throws if adding user fails
+     * @throws DataAccessException throws when user is already made
      */
     void createUser(UserData user) throws DataAccessException;
 
