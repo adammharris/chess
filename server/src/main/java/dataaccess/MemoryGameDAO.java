@@ -71,7 +71,7 @@ public class MemoryGameDAO implements GameDAO {
         }
     }
 
-    public HashMap<Integer, GameData> getGames() {
-        return games;
+    public GameData[] getGames() {
+        return games.values().toArray(new GameData[0]);
     }
 }

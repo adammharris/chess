@@ -1,6 +1,7 @@
 package dataaccess;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import java.sql.SQLException;
 
@@ -57,6 +58,9 @@ public abstract class SqlDAO {
         }
         statement = statement.substring(0, statement.length()-2).concat(") VALUES (");
         for (String value : values) {
+            if (value == null) {
+                throw new DataAccessException("Error: Bad request");
+            }
             statement = statement.concat("'" + value + "', ");
         }
         statement = statement.substring(0, statement.length()-2).concat(")");
@@ -70,19 +74,35 @@ public abstract class SqlDAO {
         }
     }
 
+    private boolean isInteger(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
     protected <T> T get(String keyIdentifier, String valueIdentifier, String keyGet, Class<T> classOfT) throws DataAccessException {
         if (keyIdentifier == null) {
             throw new DataAccessException("Error: Bad request");
         }
         T rec = null;
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT %s, %s FROM %s WHERE %s='%s'".formatted(keyIdentifier, keyGet, table, keyIdentifier, valueIdentifier);
+            String statement;
+            if (isInteger(valueIdentifier)) {
+                statement = "SELECT %s, %s FROM %s WHERE %s=%s".formatted(keyIdentifier, keyGet, table, keyIdentifier, Integer.parseInt(valueIdentifier));
+            } else {
+                statement = "SELECT %s, %s FROM %s WHERE %s='%s'".formatted(keyIdentifier, keyGet, table, keyIdentifier, valueIdentifier);
+            }
+
             //TODO: String can be unsafe?
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 try (var result = preparedStatement.executeQuery()) {
                     if (result.next()) {
                         rec = gson.fromJson(result.getString(keyGet), classOfT);
                     }
+                } catch (JsonSyntaxException e) {
+                    throw new RuntimeException(e);
                 }
             }
         } catch (SQLException e) {

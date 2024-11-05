@@ -2,14 +2,16 @@ package dataaccess;
 
 import chess.ChessGame;
 import model.GameData;
+import model.UserData;
 
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.HashSet;
 
-//TODO: abstract SQL access into SqlDao
 public class SqlGameDAO extends SqlDAO implements GameDAO {
     private static SqlGameDAO instance;
-    private SqlGameDAO() {}
+    private SqlGameDAO() {
+        setTable("games", "(gameName VARCHAR(128), gameID INT, game JSON)");
+    }
 
     public static SqlGameDAO getInstance() {
         if (instance == null) {
@@ -22,33 +24,24 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
     public GameData createGame(String gameName) throws DataAccessException {
         java.util.Random rand = new java.util.Random();
         GameData gameToAdd = new GameData(rand.nextInt(100000), null, null, gameName, new ChessGame());
-        try (var conn = DatabaseManager.getConnection()) {
-            var game = gson.toJson(gameToAdd);
-            var statement = "INSERT INTO chess (gameName, game) VALUES (%s, %s)".formatted(gameName, game);
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.executeQuery();
+        GameData currentGame = null;
+        try {
+            currentGame = get("gameName", gameName, "game", GameData.class);
+        } catch (DataAccessException e) {
+            if (!e.getMessage().contains("Unauthorized")) {
+                throw new RuntimeException(e);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
+        if (currentGame != null) {
+            throw new DataAccessException("Error: Bad request");
+        }
+        create(new String[]{"gameName", "gameID", "game"}, new String[]{gameName, "%s".formatted(gameToAdd.gameID()), gson.toJson(gameToAdd)});
         return gameToAdd;
     }
 
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
-        GameData game = null;
-        try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameID, game FROM chess WHERE gameID=%s".formatted(gameID);
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                try (var result = preparedStatement.executeQuery()) {
-                    if (result.next()) {
-                        game = gson.fromJson(result.getString("game"), GameData.class);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        GameData game = get("gameID", "%s".formatted(gameID), "game", GameData.class);
         if (game == null) {
             throw new DataAccessException("Error: Bad request");
         }
@@ -80,38 +73,31 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
         if (updatedGame == null) {
             throw new DataAccessException("Error: Bad request");
         }
-
-        try (var conn = DatabaseManager.getConnection()) {
-            var statement = "INSERT INTO chess (gameName, gameID, game) VALUES (%s, %s, %s)".formatted(
-                    updatedGame.gameName(),
-                    updatedGame.gameID(),
-                    updatedGame
-            );
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.executeQuery();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        //TODO: previousGame = games.put(game.gameID(), Objects.requireNonNullElse(updatedGame, game));
+        previousGame = getGame(updatedGame.gameID());
+        create(new String[]{"game"}, new String[]{gson.toJson(updatedGame)});
 
         if (previousGame == null) {
             throw new DataAccessException("Error: Bad request");
         }
     }
 
-    public HashMap<Integer, GameData> getGames() {
+    public GameData[] getGames() {
         java.sql.ResultSet games;
+        HashSet<GameData> gameSet = new HashSet<>();
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT game FROM chess";
+            var statement = "SELECT game FROM games";
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 games = preparedStatement.executeQuery();
+                while (games.next()) {
+                    String gameJson = games.getString("game");
+                    gameSet.add(gson.fromJson(gameJson, GameData.class));
+                }
             }
         } catch (DataAccessException | SQLException e) {
             throw new RuntimeException(e);
         }
-        //TODO: create Hashmap from ResultSet
-
-        return new HashMap<>();
+        GameData[] toReturn = {};
+        gameSet.toArray(toReturn);
+        return toReturn;
     }
 }

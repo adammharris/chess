@@ -10,10 +10,11 @@ import spark.Request;
 import java.util.HashMap;
 
 public class GameService {
-    private static MemoryGameDAO gameDAO = MemoryGameDAO.getInstance();
+    private static SqlGameDAO gameDAO = SqlGameDAO.getInstance();
 
     public GameData createGame(String gameName) {
         GameData newGame;
+        gameName = gameName.replace("'", "");
         try {
             newGame = gameDAO.createGame(gameName);
         } catch (DataAccessException e) {
@@ -34,8 +35,7 @@ public class GameService {
     }
 
     public GameData[] listGames() {
-        HashMap<Integer, GameData> games = gameDAO.getGames();
-        return games.values().toArray(new GameData[0]);
+        return gameDAO.getGames();
     }
 
     public GameData updateGame(String playerColor, int gameID, Request request) throws DataAccessException {
