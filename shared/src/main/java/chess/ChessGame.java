@@ -1,7 +1,6 @@
 package chess;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -63,8 +62,10 @@ public class ChessGame {
         Iterator<ChessMove> iterator = moves.iterator();
         while (iterator.hasNext()) {
             ChessMove move = iterator.next();
+            ChessPosition start = new ChessPosition(move.getStartPosition().getRow(), move.getStartPosition().getCol());
+            ChessPosition end = new ChessPosition(move.getEndPosition().getRow(), move.getEndPosition().getCol());
             ChessBoard simulateCheck = new ChessBoard(board);
-            simulateCheck.movePiece(move.getStartPosition(), move.getEndPosition());
+            simulateCheck.movePiece(start, end);
             boolean afterInCheck = isInCheck(myTeamColor, simulateCheck);
             if (afterInCheck) {
                 iterator.remove();
@@ -80,9 +81,15 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        ChessPiece thisPiece = board.getPiece(move.getStartPosition());
+        ChessPosition startPosition = new ChessPosition(move.getStartPosition().getRow(), move.getStartPosition().getCol());
+        ChessPosition endPosition = new ChessPosition(move.getEndPosition().getRow(), move.getEndPosition().getCol());
+        ChessPiece thisPiece = board.getPiece(new ChessPosition(startPosition.getRow(), startPosition.getCol()));
         if (thisPiece == null) {
             throw new InvalidMoveException("Piece is null");
+        }
+
+        if (!(ChessPosition.isValid(startPosition) && ChessPosition.isValid(endPosition))) {
+            throw new InvalidMoveException("Move position is invalid");
         }
 
         TeamColor thisColor = thisPiece.getTeamColor();
@@ -90,7 +97,7 @@ public class ChessGame {
             throw new InvalidMoveException("Cannot move out of turn");
         }
 
-        Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
+        Collection<ChessMove> validMoves = validMoves(startPosition);
         boolean moveIsInValidMoves = false;
         for (ChessMove vm : validMoves) {
             if (move.equals(vm)) {
@@ -98,6 +105,7 @@ public class ChessGame {
                 break;
             }
         }
+
         if (moveIsInValidMoves) {
             board.executeMove(move);
         } else {
@@ -136,14 +144,14 @@ public class ChessGame {
 
     private ChessGameState checkGameState(TeamColor teamColor, ChessBoard board, ChessGameState checkFor) {
         // First, see if the team is in check
-        HashMap<ChessPosition, ChessPiece> pieces = board.getPieces();
+        ChessPiece[] pieces = board.getPieces();
         boolean isInCheck = false;
         ChessPosition kingPos = board.getPosition(teamColor, ChessPiece.PieceType.KING);
-        for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
-            if (piece.getValue().getTeamColor() == teamColor) {
+        for (ChessPiece chessPiece : pieces) {
+            if (chessPiece.getTeamColor() == teamColor) {
                 continue;
             }
-            Collection<ChessMove> moves = piece.getValue().pieceMoves(board, piece.getKey());
+            Collection<ChessMove> moves = chessPiece.pieceMoves(board, chessPiece.position);
             for (ChessMove move : moves) {
                 if (move.getEndPosition().equals(kingPos)) {
                     isInCheck = true;
@@ -162,11 +170,11 @@ public class ChessGame {
         // Second, check for Checkmate and Stalemate
         boolean isCheckmate = true;
         boolean isStalemate = true;
-        for (java.util.Map.Entry<ChessPosition, ChessPiece> piece : pieces.entrySet()) {
-            if (piece.getValue().getTeamColor() != teamColor) {
+        for (ChessPiece piece : pieces) {
+            if (piece.getTeamColor() != teamColor) {
                 continue;
             }
-            Collection<ChessMove> moves = validMoves(piece.getKey());
+            Collection<ChessMove> moves = validMoves(piece.position);
             for (ChessMove move : moves) {
                 ChessBoard simulateCheck = new ChessBoard(board);
                 simulateCheck.executeMove(move);

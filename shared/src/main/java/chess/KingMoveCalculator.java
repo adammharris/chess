@@ -1,9 +1,7 @@
 package chess;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
 public class KingMoveCalculator implements PieceMoveCalculator {
     @Override
@@ -25,10 +23,10 @@ public class KingMoveCalculator implements PieceMoveCalculator {
 
     private void addCastlingMoves(ChessBoard board, HashSet<ChessMove> moves, ChessPosition kingPosition, ChessGame.TeamColor teamColor) {
         if (canCastleKingside(board, kingPosition, teamColor)) {
-            moves.add(new ChessMove(kingPosition, new ChessPosition(kingPosition.getRow(), kingPosition.getColumn() + 2)));
+            moves.add(new ChessMove(new ChessPosition(kingPosition.getRow(), kingPosition.getCol()), new ChessPosition(kingPosition.getRow(), kingPosition.getCol() + 2)));
         }
         if (canCastleQueenside(board, kingPosition, teamColor)) {
-            moves.add(new ChessMove(kingPosition, new ChessPosition(kingPosition.getRow(), kingPosition.getColumn() - 2)));
+            moves.add(new ChessMove(new ChessPosition(kingPosition.getRow(), kingPosition.getCol()), new ChessPosition(kingPosition.getRow(), kingPosition.getCol() - 2)));
         }
     }
 
@@ -40,7 +38,10 @@ public class KingMoveCalculator implements PieceMoveCalculator {
         4. Both your Rook and King will be safe after making the move (cannot be captured by any enemy pieces).
          */
         int currentRow = kingPosition.getRow();
-        if (!(kingPosition.getRow() == 8 || kingPosition.getRow() == 1) || board.getPiece(kingPosition).hasMoved) {
+        if (!(kingPosition.getRow() == 8 || kingPosition.getRow() == 1)) {
+            return false;
+        }
+        if (!(kingPosition.getCol() == 5)) {
             return false;
         }
         if (board.getPiece(kingPosition).hasMoved) {
@@ -67,9 +68,8 @@ public class KingMoveCalculator implements PieceMoveCalculator {
             return false;
         }
 
-
         ChessBoard simulate = new ChessBoard(board);
-        simulate.movePiece(kingPosition, new ChessPosition(kingPosition.getRow(), 7));
+        simulate.movePiece(new ChessPosition(kingPosition.getRow(), kingPosition.getCol()), new ChessPosition(kingPosition.getRow(), 7));
         simulate.movePiece(new ChessPosition(kingPosition.getRow(), 8), new ChessPosition(kingPosition.getRow(), 6));
         if (isInDanger(simulate, new ChessPosition(kingPosition.getRow(), 7), teamColor)) {
             return false;
@@ -122,21 +122,12 @@ public class KingMoveCalculator implements PieceMoveCalculator {
     }
 
     private boolean isInDanger(ChessBoard board, ChessPosition position, ChessGame.TeamColor teamColor) {
-        HashMap<ChessPosition, ChessPiece> pieces = board.getPieces();
-        for (Map.Entry<ChessPosition, ChessPiece> entry : pieces.entrySet()) {
-            ChessPiece piece = entry.getValue();
-            if (piece == null) {
-                System.out.println(position);
-            }
-            if (piece == null) {
-                return false;
-            }
+
+        ChessPiece[] pieces = board.getPieces();
+        for (ChessPiece piece : pieces) {
             if (piece.getTeamColor() != teamColor) {
-                Collection<ChessMove> moves = piece.pieceMoves(board, entry.getKey());
+                Collection<ChessMove> moves = piece.pieceMoves(board, piece.position);
                 for (ChessMove move : moves) {
-                    if (board.getPiece(move.getStartPosition()).getTeamColor() == teamColor) {
-                        continue;
-                    }
                     if (move.getEndPosition().equals(position)) {
                         return true;
                     }

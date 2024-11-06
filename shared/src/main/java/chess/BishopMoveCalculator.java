@@ -22,7 +22,7 @@ public class BishopMoveCalculator implements PieceMoveCalculator {
         return moves;
     }
     private void calculateRow(ChessBoard board, ChessPosition position, HashSet<ChessMove> moves, Direction dir) {
-        int j = position.getColumn();
+        int j = position.getCol();
         switch (dir) {
             case UP_RIGHT:
                 j++;

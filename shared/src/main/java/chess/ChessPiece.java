@@ -13,9 +13,16 @@ public class ChessPiece {
     private final ChessGame.TeamColor color;
     private final ChessPiece.PieceType type;
     public boolean hasMoved = false;
+    public ChessPosition position;
+    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type, ChessPosition position) {
+        this.color = pieceColor;
+        this.type = type;
+        this.position = position;
+    }
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.color = pieceColor;
         this.type = type;
+        this.position = null;
     }
 
     /**

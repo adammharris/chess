@@ -20,6 +20,13 @@ public class ChessPosition {
         this.col = col;
     }
 
+    public static boolean isValid(ChessPosition pos) {
+        return pos.getRow() >= 1
+                && pos.getRow() <= 8
+                && pos.getCol() >= 1
+                && pos.getCol() <= 8;
+    }
+
     /**
      * @return which row this position is in
      * 1 codes for the bottom row
@@ -32,7 +39,7 @@ public class ChessPosition {
      * @return which column this position is in
      * 1 codes for the left row
      */
-    public int getColumn() {
+    public int getCol() {
         return this.col;
     }
 
@@ -53,7 +60,7 @@ public class ChessPosition {
             return false;
         }
         ChessPosition newPosition = (ChessPosition) obj;
-        return this.row == newPosition.getRow() && this.col == newPosition.getColumn();
+        return this.row == newPosition.getRow() && this.col == newPosition.getCol();
     }
 
     @Override

@@ -29,7 +29,7 @@ public class PawnMoveCalculator implements PieceMoveCalculator {
     }
     private boolean addMoveIfValid(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow) {
         int newRow = position.getRow() + addRow;
-        int newCol = position.getColumn();
+        int newCol = position.getCol();
         if (newRow > 8
                 || newRow < 1
                 || newCol > 8
@@ -46,7 +46,7 @@ public class PawnMoveCalculator implements PieceMoveCalculator {
     }
     private void addIfAttackable(ChessBoard board, HashSet<ChessMove> moves, ChessPosition position, int addRow, int addCol) {
         int newRow = position.getRow() + addRow;
-        int newCol = position.getColumn() + addCol;
+        int newCol = position.getCol() + addCol;
         if (newRow > 8
                 || newRow < 1
                 || newCol > 8
@@ -90,10 +90,10 @@ public class PawnMoveCalculator implements PieceMoveCalculator {
 
         boolean victimIsPawn = lastPiece != null && lastPiece.getPieceType() == ChessPiece.PieceType.PAWN;
         boolean pawnMovedTwoSpaces = Math.abs(lastEnd.getRow() - lastStart.getRow()) == 2;
-        boolean pawnIsOneColumnAway = Math.abs(lastEnd.getColumn() - position.getColumn()) == 1;
+        boolean pawnIsOneColumnAway = Math.abs(lastEnd.getCol() - position.getCol()) == 1;
         boolean onSameRow = lastEnd.getRow() == position.getRow();
         if (victimIsPawn && pawnMovedTwoSpaces && pawnIsOneColumnAway && onSameRow) {
-            ChessPosition enPassantCapture = new ChessPosition(position.getRow() + direction, lastEnd.getColumn());
+            ChessPosition enPassantCapture = new ChessPosition(position.getRow() + direction, lastEnd.getCol());
             moves.add(new ChessMove(position, enPassantCapture));
         }
     }

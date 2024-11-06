@@ -24,7 +24,7 @@ public class RookMoveCalculator implements PieceMoveCalculator {
         switch (dir) {
             case UP:
                 for (int i = position.getRow() + 1; i <= 8; i++) {
-                    ChessPosition newPos = new ChessPosition(i, position.getColumn());
+                    ChessPosition newPos = new ChessPosition(i, position.getCol());
                     boolean foundPiece = bmc.addMoveIfValid(board, moves, position, newPos);
                     if (foundPiece) {
                         break;
@@ -33,7 +33,7 @@ public class RookMoveCalculator implements PieceMoveCalculator {
                 break;
             case DOWN:
                 for (int i = position.getRow() - 1; i >= 1; i--) {
-                    ChessPosition newPos = new ChessPosition(i, position.getColumn());
+                    ChessPosition newPos = new ChessPosition(i, position.getCol());
                     boolean foundPiece = bmc.addMoveIfValid(board, moves, position, newPos);
                     if (foundPiece) {
                         break;
@@ -41,7 +41,7 @@ public class RookMoveCalculator implements PieceMoveCalculator {
                 }
                 break;
             case LEFT:
-                for (int i = position.getColumn() - 1; i >= 1; i--) {
+                for (int i = position.getCol() - 1; i >= 1; i--) {
                     ChessPosition newPos = new ChessPosition(position.getRow(), i);
 
                     boolean foundPiece = bmc.addMoveIfValid(board, moves, position, newPos);
@@ -51,7 +51,7 @@ public class RookMoveCalculator implements PieceMoveCalculator {
                 }
                 break;
             case RIGHT:
-                for (int i = position.getColumn() + 1; i <= 8; i++) {
+                for (int i = position.getCol() + 1; i <= 8; i++) {
                     ChessPosition newPos = new ChessPosition(position.getRow(), i);
                     boolean foundPiece = bmc.addMoveIfValid(board, moves, position, newPos);
                     if (foundPiece) {
