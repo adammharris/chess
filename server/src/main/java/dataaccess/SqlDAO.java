@@ -31,7 +31,7 @@ public abstract class SqlDAO {
 
     public void clear() {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "TRUNCATE " + table; //TODO: String can be unsafe?
+            var statement = "TRUNCATE " + table; // String can be unsafe?
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             }
@@ -42,7 +42,7 @@ public abstract class SqlDAO {
 
     protected void delete(String key, String value) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "DELETE FROM %s WHERE %s='%s'".formatted(table, key, value); //TODO: String can be unsafe?
+            var statement = "DELETE FROM %s WHERE %s='%s'".formatted(table, key, value); // String can be unsafe?
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             }
@@ -75,7 +75,7 @@ public abstract class SqlDAO {
             statement = statement.concat("'" + value + "', ");
         }
         statement = statement.substring(0, statement.length()-2).concat(")");
-        // TODO: String can be unsafe?
+        // String can be unsafe?
         try (var conn = DatabaseManager.getConnection()) {
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
@@ -101,12 +101,14 @@ public abstract class SqlDAO {
         try (var conn = DatabaseManager.getConnection()) {
             String statement;
             if (isInteger(valueIdentifier)) {
-                statement = "SELECT %s, %s FROM %s WHERE %s=%s".formatted(keyIdentifier, keyGet, table, keyIdentifier, Integer.parseInt(valueIdentifier));
+                statement = "SELECT %s, %s FROM %s WHERE %s=%s".formatted(
+                        keyIdentifier, keyGet, table, keyIdentifier, Integer.parseInt(valueIdentifier));
             } else {
-                statement = "SELECT %s, %s FROM %s WHERE %s='%s'".formatted(keyIdentifier, keyGet, table, keyIdentifier, valueIdentifier);
+                statement = "SELECT %s, %s FROM %s WHERE %s='%s'".formatted(
+                        keyIdentifier, keyGet, table, keyIdentifier, valueIdentifier);
             }
 
-            //TODO: String can be unsafe?
+            //String can be unsafe?
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 try (var result = preparedStatement.executeQuery()) {
                     if (result.next()) {

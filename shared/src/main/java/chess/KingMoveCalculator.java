@@ -23,10 +23,12 @@ public class KingMoveCalculator implements PieceMoveCalculator {
 
     private void addCastlingMoves(ChessBoard board, HashSet<ChessMove> moves, ChessPosition kingPosition, ChessGame.TeamColor teamColor) {
         if (canCastleKingside(board, kingPosition, teamColor)) {
-            moves.add(new ChessMove(new ChessPosition(kingPosition.getRow(), kingPosition.getCol()), new ChessPosition(kingPosition.getRow(), kingPosition.getCol() + 2)));
+            moves.add(new ChessMove(new ChessPosition(kingPosition.getRow(), kingPosition.getCol()),
+                    new ChessPosition(kingPosition.getRow(), kingPosition.getCol() + 2)));
         }
         if (canCastleQueenside(board, kingPosition, teamColor)) {
-            moves.add(new ChessMove(new ChessPosition(kingPosition.getRow(), kingPosition.getCol()), new ChessPosition(kingPosition.getRow(), kingPosition.getCol() - 2)));
+            moves.add(new ChessMove(new ChessPosition(kingPosition.getRow(), kingPosition.getCol()),
+                    new ChessPosition(kingPosition.getRow(), kingPosition.getCol() - 2)));
         }
     }
 

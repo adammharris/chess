@@ -7,36 +7,36 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SqlGameDAOTest {
-    private final static SqlGameDAO gameDAO = SqlGameDAO.getInstance();
+    private final static SqlGameDAO GAME_DAO = SqlGameDAO.getInstance();
     @BeforeAll
     static void setup() {
-        gameDAO.clear();
+        GAME_DAO.clear();
     }
     @Test
     void createGame() {
-        assertDoesNotThrow(() -> gameDAO.createGame("gameName"));
+        assertDoesNotThrow(() -> GAME_DAO.createGame("gameName"));
     }
 
     @Test
     void getGame() {
         final GameData result;
         try {
-            result = gameDAO.createGame("gameName");
+            result = GAME_DAO.createGame("gameName");
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-        assertDoesNotThrow(() -> gameDAO.getGame(result.gameID()));
+        assertDoesNotThrow(() -> GAME_DAO.getGame(result.gameID()));
     }
 
     @Test
     void updateGame() {
         final GameData result;
         try {
-            result = gameDAO.createGame("gameName");
+            result = GAME_DAO.createGame("gameName");
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
-        assertDoesNotThrow(() -> gameDAO.updateGame(new GameData(result.gameID(), "new", "name", result.gameName(), result.game())));
+        assertDoesNotThrow(() -> GAME_DAO.updateGame(new GameData(result.gameID(), "new", "name", result.gameName(), result.game())));
 
     }
 }

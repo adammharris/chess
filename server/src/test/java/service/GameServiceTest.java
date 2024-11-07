@@ -1,6 +1,5 @@
 package service;
 
-import dataaccess.DataAccessException;
 import model.GameData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,15 +40,15 @@ class GameServiceTest {
     @Test
     void updateGame() {
         GameData game1 = gs.createGame("game1");
-        GameData game2 = gs.createGame("game2");
+        //GameData game2 = gs.createGame("game2");
         class Req extends Request {
-            public String getHeader(String p) {
+            /*public String getHeader(String p) {
                 if (p.equals("Authorization")) {
                     return "auth";
                 } else {
                     return "not auth";
                 }
-            }
+            }*/
         }
         Req req = new Req();
         assertThrows(NullPointerException.class, () -> gs.updateGame("WHITE", game1.gameID(), req));

@@ -1,23 +1,21 @@
 package service;
 
 import dataaccess.DataAccessException;
-import dataaccess.MemoryUserDAO;
 import dataaccess.SqlUserDAO;
 import model.AuthData;
 import model.UserData;
 
 public class UserService {
-    private final static SqlUserDAO userDAO = SqlUserDAO.getInstance();
+    private final static SqlUserDAO USER_DAO = SqlUserDAO.getInstance();
 
     public AuthData register(UserData user) throws DataAccessException {
-        userDAO.createUser(user);
-        //UserData currentUser = userDAO.getUser()
+        USER_DAO.createUser(user);
         return login(user);
     }
 
     public AuthData login(UserData user) throws DataAccessException {
         // Check if user exists
-        userDAO.getUser(user);
+        USER_DAO.getUser(user);
 
         // Create new AuthData
         AuthService as = new AuthService();
@@ -30,6 +28,6 @@ public class UserService {
     }
 
     public void clear() {
-        userDAO.clear();
+        USER_DAO.clear();
     }
 }

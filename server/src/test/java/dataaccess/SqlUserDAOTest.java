@@ -6,18 +6,18 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SqlUserDAOTest {
-    private final static SqlUserDAO userDAO = SqlUserDAO.getInstance();
+    private final static SqlUserDAO USER_DAO = SqlUserDAO.getInstance();
     @Test
     void createUser() {
-        assertDoesNotThrow(() -> userDAO.createUser(new UserData("a", "b", "c")));
+        assertDoesNotThrow(() -> USER_DAO.createUser(new UserData("a", "b", "c")));
     }
 
     @Test
     void getUser() {
         final UserData result;
         try {
-            userDAO.createUser(new UserData("a", "b", "c"));
-            result = userDAO.getUser(new UserData("a", "b","c"));
+            USER_DAO.createUser(new UserData("a", "b", "c"));
+            result = USER_DAO.getUser(new UserData("a", "b","c"));
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }

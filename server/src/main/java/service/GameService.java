@@ -5,13 +5,13 @@ import model.GameData;
 import spark.Request;
 
 public class GameService {
-    private static final SqlGameDAO gameDAO = SqlGameDAO.getInstance();
+    private static final SqlGameDAO GAME_DAO = SqlGameDAO.getInstance();
 
     public GameData createGame(String gameName) {
         GameData newGame;
         gameName = gameName.replace("'", "\\'");
         try {
-            newGame = gameDAO.createGame(gameName);
+            newGame = GAME_DAO.createGame(gameName);
         } catch (DataAccessException e) {
             throw new RuntimeException("Failed to create game");
         }
@@ -21,7 +21,7 @@ public class GameService {
     public GameData getGame(int gameID) {
         GameData game;
         try {
-            game = gameDAO.getGame(gameID);
+            game = GAME_DAO.getGame(gameID);
         } catch (DataAccessException e) {
             return null;
         }
@@ -29,7 +29,7 @@ public class GameService {
     }
 
     public GameData[] listGames() {
-        return gameDAO.getGames();
+        return GAME_DAO.getGames();
     }
 
     public GameData updateGame(String playerColor, int gameID, Request request) throws DataAccessException {
@@ -64,11 +64,11 @@ public class GameService {
                 updatedGame = new GameData(gameID, game.whiteUsername(), username, game.gameName(), game.game());
             }
         }
-        gameDAO.updateGame(updatedGame);
+        GAME_DAO.updateGame(updatedGame);
         return updatedGame;
     }
 
     public void clear() {
-        gameDAO.clear();
+        GAME_DAO.clear();
     }
 }

@@ -19,6 +19,13 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
         return instance;
     }
 
+    private String changeNullString (String isNull) {
+        if (isNull.equals("null")) {
+            isNull = null;
+        }
+        return isNull;
+    }
+
     @Override
     public GameData createGame(String gameName) throws DataAccessException {
         java.util.Random rand = new java.util.Random();
@@ -50,14 +57,8 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
                 try (var resultSet = preparedStatement.executeQuery()) {
                     if (resultSet.next()) {
                         String gameName = resultSet.getString("gameName");
-                        String whiteUsername = resultSet.getString("whiteUsername");
-                        if (whiteUsername.equals("null")) {
-                            whiteUsername = null;
-                        }
-                        String blackUsername = resultSet.getString("blackUsername");
-                        if (blackUsername.equals("null")) {
-                            blackUsername = null;
-                        }
+                        String whiteUsername = changeNullString(resultSet.getString("whiteUsername"));
+                        String blackUsername = changeNullString(resultSet.getString("blackUsername"));
                         String gameJson = resultSet.getString("game");
                         ChessGame chessGame = gson.fromJson(gameJson, ChessGame.class);
                         game = new GameData(gameID, whiteUsername, blackUsername, gameName, chessGame);
@@ -80,11 +81,6 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
             throw new DataAccessException("Error: Bad request");
         }
 
-        String newName = game.gameName();
-        if (newName == null) {
-            newName = previousGame.gameName();
-        }
-
         String newWhite = game.whiteUsername();
         if (newWhite == null) {
             newWhite = previousGame.whiteUsername();
@@ -100,16 +96,12 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
             newGame = previousGame.game();
         }
 
-        //GameData finalGame = new GameData(game.gameID(), newWhite, newBlack, newName, newGame);
-        //delete("gameID", "%s".formatted(game.gameID()));
         set("whiteUsername", newWhite, "gameID", "%s".formatted(game.gameID()));
         set("blackUsername", newBlack, "gameID", "%s".formatted(game.gameID()));
-        //set("gameName", newName, "gameID", "%s".formatted(game.gameID()));
         set("game", gson.toJson(newGame), "gameID", "%s".formatted(game.gameID()));
     }
 
     public GameData[] getGames() {
-        //java.sql.ResultSet games;
         ArrayList<GameData> gameList = new ArrayList<>();
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT * FROM games";
@@ -118,14 +110,8 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
                     while (resultSet.next()) {
                         int gameID = resultSet.getInt("gameID");
                         String gameName = resultSet.getString("gameName");
-                        String whiteUsername = resultSet.getString("whiteUsername");
-                        String blackUsername = resultSet.getString("blackUsername");
-                        if (whiteUsername.equals("null")) {
-                            whiteUsername = null;
-                        }
-                        if (blackUsername.equals("null")) {
-                            blackUsername = null;
-                        }
+                        String whiteUsername = changeNullString(resultSet.getString("whiteUsername"));
+                        String blackUsername = changeNullString(resultSet.getString("blackUsername"));
                         String gameJson = resultSet.getString("game");
                         ChessGame chessGame = gson.fromJson(gameJson, ChessGame.class);
                         GameData gameData = new GameData(gameID, whiteUsername, blackUsername, gameName, chessGame);

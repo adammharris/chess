@@ -21,7 +21,8 @@ public class ChessBoard {
     // Used to simulate moves
     public ChessBoard(ChessBoard board) {
         for (ChessPiece piece : board.getPieces()) {
-            this.pieces.add(new ChessPiece(piece.getTeamColor(), piece.getPieceType(), new ChessPosition(piece.position.getRow(), piece.position.getCol())));
+            this.pieces.add(new ChessPiece(piece.getTeamColor(), piece.getPieceType(),
+                    new ChessPosition(piece.position.getRow(), piece.position.getCol())));
         }
         this.lastMove = board.getLastMove();
     }
@@ -182,7 +183,8 @@ public class ChessBoard {
     public void resetBoard() {
         pieces.clear();
         for (ChessPiece piece : DEFAULT_BOARD.getPieces()) {
-            pieces.add(new ChessPiece(piece.getTeamColor(), piece.getPieceType(), new ChessPosition(piece.position.getRow(), piece.position.getCol())));
+            pieces.add(new ChessPiece(piece.getTeamColor(), piece.getPieceType(),
+                    new ChessPosition(piece.position.getRow(), piece.position.getCol())));
         }
     }
 
