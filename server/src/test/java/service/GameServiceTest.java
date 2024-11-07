@@ -41,15 +41,7 @@ class GameServiceTest {
     void updateGame() {
         GameData game1 = gs.createGame("game1");
         //GameData game2 = gs.createGame("game2");
-        class Req extends Request {
-            /*public String getHeader(String p) {
-                if (p.equals("Authorization")) {
-                    return "auth";
-                } else {
-                    return "not auth";
-                }
-            }*/
-        }
+        class Req extends Request { }
         Req req = new Req();
         assertThrows(NullPointerException.class, () -> gs.updateGame("WHITE", game1.gameID(), req));
     }

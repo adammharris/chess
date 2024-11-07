@@ -70,7 +70,15 @@ class SqlAuthDAOTest {
 
     @Test
     void testFalseDelete() {
-        assertThrows(DataAccessException.class, () -> AUTH_DAO.deleteAuth("fake"));
+        try {
+            AuthData auth1 = AUTH_DAO.createAuth("test1");
+            AuthData auth2 = AUTH_DAO.createAuth("test2");
+            AUTH_DAO.deleteAuth("not a token");
+            assertNotNull(AUTH_DAO.getAuth(auth1.authToken()));
+            assertNotNull(AUTH_DAO.getAuth(auth2.authToken()));
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test

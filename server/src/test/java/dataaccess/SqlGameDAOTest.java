@@ -1,15 +1,15 @@
 package dataaccess;
 
 import model.GameData;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class SqlGameDAOTest {
     private final static SqlGameDAO GAME_DAO = SqlGameDAO.getInstance();
-    @BeforeAll
-    static void setup() {
+    @BeforeEach
+    void setup() {
         GAME_DAO.clear();
     }
     @Test
