@@ -51,6 +51,17 @@ public abstract class SqlDAO {
         }
     }
 
+    protected void set(String column, String value, String conditionKey, String conditionValue) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "UPDATE %s SET %s = '%s' WHERE %s = %s".formatted(table, column, value, conditionKey, conditionValue);
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected void create(String[] keys, String[] values) throws DataAccessException {
         String statement = "INSERT INTO %s (".formatted(table);
         for (String key : keys) {
