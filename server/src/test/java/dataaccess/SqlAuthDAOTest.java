@@ -27,6 +27,11 @@ class SqlAuthDAOTest {
     }
 
     @Test
+    void testCreateBadAuth() {
+        assertThrows(DataAccessException.class, () -> AUTH_DAO.createAuth(null));
+    }
+
+    @Test
     void testGetAuth() {
         final AuthData auth1;
         try {
@@ -45,6 +50,11 @@ class SqlAuthDAOTest {
     }
 
     @Test
+    void testWrongGet() {
+        assertThrows(DataAccessException.class, () -> AUTH_DAO.getAuth("test"));
+    }
+
+    @Test
     void testDeleteAuth() {
         final AuthData auth;
         try {
@@ -56,6 +66,11 @@ class SqlAuthDAOTest {
         //AuthData auth2 = null;
         assertThrows(DataAccessException.class, () -> AUTH_DAO.getAuth(auth.authToken()));
         //assertNull(auth2);
+    }
+
+    @Test
+    void testFalseDelete() {
+        assertThrows(DataAccessException.class, () -> AUTH_DAO.deleteAuth("fake"));
     }
 
     @Test
@@ -72,5 +87,9 @@ class SqlAuthDAOTest {
         AUTH_DAO.clear();
         assertThrows(DataAccessException.class, () -> AUTH_DAO.getAuth(auth1.authToken()));
         assertThrows(DataAccessException.class, () -> AUTH_DAO.getAuth(auth2.authToken()));
+    }
+    @Test
+    void testClearEmpty() {
+        assertDoesNotThrow(AUTH_DAO::clear);
     }
 }

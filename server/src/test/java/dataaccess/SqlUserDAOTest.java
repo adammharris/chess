@@ -13,6 +13,11 @@ class SqlUserDAOTest {
     }
 
     @Test
+    void createUserBad() {
+        assertThrows(DataAccessException.class, () -> USER_DAO.createUser(new UserData(null, null, null)));
+    }
+
+    @Test
     void getUser() {
         final UserData result;
         try {
@@ -22,5 +27,10 @@ class SqlUserDAOTest {
             throw new RuntimeException(e);
         }
         assertNotNull(result);
+    }
+
+    @Test
+    void getUserBad() {
+        assertThrows(DataAccessException.class, () -> USER_DAO.getUser(new UserData(null, null, null)));
     }
 }

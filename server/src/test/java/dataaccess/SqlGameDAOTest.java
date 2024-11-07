@@ -18,6 +18,11 @@ class SqlGameDAOTest {
     }
 
     @Test
+    void createGameBad() {
+        assertThrows(DataAccessException.class, () -> GAME_DAO.createGame(null));
+    }
+
+    @Test
     void getGame() {
         final GameData result;
         try {
@@ -26,6 +31,11 @@ class SqlGameDAOTest {
             throw new RuntimeException(e);
         }
         assertDoesNotThrow(() -> GAME_DAO.getGame(result.gameID()));
+    }
+
+    @Test
+    void getGameBad() {
+        assertThrows(DataAccessException.class, () -> GAME_DAO.getGame(0));
     }
 
     @Test
@@ -38,5 +48,10 @@ class SqlGameDAOTest {
         }
         assertDoesNotThrow(() -> GAME_DAO.updateGame(new GameData(result.gameID(), "new", "name", result.gameName(), result.game())));
 
+    }
+
+    @Test
+    void updateGameBad() {
+        assertThrows(DataAccessException.class, () -> GAME_DAO.updateGame(new GameData(0, null, null, null, null)));
     }
 }
