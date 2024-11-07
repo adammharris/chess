@@ -46,19 +46,19 @@ public class GameService {
         }
 
         if (playerColor.equals("WHITE")) {
-            if (!game.whiteUsername().equals("null")) {
+            if (game.whiteUsername() != null) {
                 throw new DataAccessException("Error: Forbidden");
             }
-            if (game.blackUsername().equals("null")) {
+            if (game.blackUsername() == null) {
                 updatedGame = new GameData(gameID, username, "null", game.gameName(), game.game());
             } else {
                 updatedGame = new GameData(gameID, username, game.blackUsername(), game.gameName(), game.game());
             }
         } else if (playerColor.equals("BLACK")) {
-            if (!game.blackUsername().equals("null")) {
+            if (game.blackUsername() != null) {
                 throw new DataAccessException("Error: Forbidden");
             }
-            if (game.whiteUsername().equals("null")) {
+            if (game.whiteUsername() == null) {
                 updatedGame = new GameData(gameID, "null", username, game.gameName(), game.game());
             } else {
                 updatedGame = new GameData(gameID, game.whiteUsername(), username, game.gameName(), game.game());

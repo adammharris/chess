@@ -51,7 +51,13 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
                     if (resultSet.next()) {
                         String gameName = resultSet.getString("gameName");
                         String whiteUsername = resultSet.getString("whiteUsername");
+                        if (whiteUsername.equals("null")) {
+                            whiteUsername = null;
+                        }
                         String blackUsername = resultSet.getString("blackUsername");
+                        if (blackUsername.equals("null")) {
+                            blackUsername = null;
+                        }
                         String gameJson = resultSet.getString("game");
                         ChessGame chessGame = gson.fromJson(gameJson, ChessGame.class);
                         game = new GameData(gameID, whiteUsername, blackUsername, gameName, chessGame);
@@ -114,6 +120,12 @@ public class SqlGameDAO extends SqlDAO implements GameDAO {
                         String gameName = resultSet.getString("gameName");
                         String whiteUsername = resultSet.getString("whiteUsername");
                         String blackUsername = resultSet.getString("blackUsername");
+                        if (whiteUsername.equals("null")) {
+                            whiteUsername = null;
+                        }
+                        if (blackUsername.equals("null")) {
+                            blackUsername = null;
+                        }
                         String gameJson = resultSet.getString("game");
                         ChessGame chessGame = gson.fromJson(gameJson, ChessGame.class);
                         GameData gameData = new GameData(gameID, whiteUsername, blackUsername, gameName, chessGame);
