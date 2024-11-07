@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class SqlUserDAO extends SqlDAO implements UserDAO {
     private static SqlUserDAO instance;
@@ -26,11 +27,13 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
             }
         }
         if (currentUser != null) {
-            if (currentUser.equals(user)) {
+            if (currentUser.username().equals(user.username())) {
                 throw new DataAccessException("Error: Forbidden");
             }
         }
-        create(new String[]{"username", "password", "user"}, new String[]{user.username(), user.password(), gson.toJson(user)});
+        String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        UserData userWithHashedPassword = new UserData(user.username(), hashedPassword, user.email());
+        create(new String[]{"username", "password", "user"}, new String[]{user.username(), hashedPassword, gson.toJson(userWithHashedPassword)});
     }
 
     @Override
@@ -42,7 +45,7 @@ public class SqlUserDAO extends SqlDAO implements UserDAO {
         if (loginRequest.password() == null) {
             throw new DataAccessException("Error: Bad request");
         }
-        if (!loginRequest.password().equals(user.password())) {
+        if (!BCrypt.checkpw(loginRequest.password(), user.password())) {
             throw new DataAccessException("Error: Unauthorized");
         }
         return user;
