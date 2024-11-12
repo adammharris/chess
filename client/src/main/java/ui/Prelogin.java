@@ -102,14 +102,20 @@ public class Prelogin {
                         """);
                 break;
             case "logout":
+                try {
+                    server.logout(authToken);
+                } catch (IOException e) {
+                    System.out.println("Logout failed!");
+                }
+                authToken = "";
+                currentFunction = Prelogin::inputCommand;
                 break;
             case "create":
                 setVariable("gameName");
                 try {
                     int gameID = server.createGame(authToken, inputs.get("gameName"));
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
-                    //System.out.println("Failed to create game!" + e.getMessage());
+                    System.out.println("Failed to create game!" + e.getMessage());
                 }
                 break;
             case "list":
@@ -126,6 +132,14 @@ public class Prelogin {
                 }
                 break;
             case "play":
+                setVariable("playerColor");
+                setVariable("gameID");
+                try {
+                    server.joinGame(authToken, inputs.get("playerColor"), Integer.parseInt(inputs.get("gameID")));
+                } catch (IOException e) {
+                    System.out.println("Join game failed!");
+                }
+                // TODO: ChessGame UI
                 break;
             case "observe":
                 break;

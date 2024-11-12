@@ -48,27 +48,30 @@ public class ServerFacade {
         return url;
     }
 
-    private <T> T getRequest(String urlPath, String authToken, Class<T> Response) throws IOException {
-        URL url = getURL(urlPath);
+    private HttpURLConnection getConnection(URL url, String requestMethod, String authToken) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setReadTimeout(5000);
-        connection.setRequestMethod("GET");
-        connection.addRequestProperty("Authorization", authToken);
+        connection.setRequestMethod(requestMethod);
+        if (!authToken.isEmpty()) {
+            connection.addRequestProperty("Authorization", authToken);
+        }
+        if (requestMethod.equals("POST") || requestMethod.equals("PUT")) {
+            connection.setDoOutput(true);
+        }
         connection.connect();
+        return connection;
+    }
+
+    private <T> T getRequest(String urlPath, String authToken, Class<T> Response) throws IOException {
+        URL url = getURL(urlPath);
+        HttpURLConnection connection = getConnection(url, "GET", authToken);
         InputStream responseBody = connection.getInputStream();
         return gson.fromJson(inputStreamToString(responseBody), Response);
     }
 
     private <S, T> T postRequest(String urlPath, String authToken, S Request, Class<T> Response) throws IOException {
         URL url = getURL(urlPath);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setReadTimeout(5000);
-        connection.setRequestMethod("POST");
-        if (!authToken.isEmpty()) {
-            connection.addRequestProperty("Authorization", authToken);
-        }
-        connection.setDoOutput(true);
-        connection.connect();
+        HttpURLConnection connection = getConnection(url, "POST", authToken);
 
         // Write Request
         try(OutputStream requestBody = connection.getOutputStream()) {
@@ -111,5 +114,22 @@ public class ServerFacade {
         record CreateRequest(String gameName) {}
         CreateResponse response = postRequest("game", authToken, new CreateRequest(gameName), CreateResponse.class);
         return response.gameID();
+    }
+
+    public void joinGame(String authToken, String playerColor, int gameID) throws IOException {
+        URL url = getURL("game");
+        HttpURLConnection connection = getConnection(url, "PUT", authToken);
+
+        // Write Request
+        try(OutputStream requestBody = connection.getOutputStream()) {
+            record JoinRequest(String playerColor, int gameID) {}
+            String userJson = gson.toJson(new JoinRequest(playerColor, gameID));
+            requestBody.write(userJson.getBytes());
+        }
+    }
+
+    public void logout(String authToken) throws IOException {
+        URL url = getURL("session");
+        HttpURLConnection connection = getConnection(url, "DELETE", authToken);
     }
 }
