@@ -1,7 +1,14 @@
+package ui;
+
+import client.ServerFacade;
+
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Prelogin {
     Scanner scanner;
+    ServerFacade server = new ServerFacade();
+
     public Prelogin(Scanner scanner) {
         this.scanner = scanner;
     }
@@ -27,11 +34,20 @@ public class Prelogin {
                     break;
                 case "register":
                     System.out.print("Time to register! (Not implemented)\n");
+                    try {
+                        server.register("user", "pass", "email");
+                        // Go to Postlogin
+
+                    } catch (IOException e) {
+                        //throw new RuntimeException(e);
+                        System.out.print("An error occurred! Please try again.\n");
+                    }
                     break;
                 case "login":
                     System.out.print("Enter credentials: (Not implemented)\n");
                     break;
-
+                default:
+                    System.out.print("Command not available. Type `help` for available commands.\n");
             }
         }
     }

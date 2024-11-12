@@ -1,5 +1,4 @@
-import chess.*;
-
+import ui.Prelogin;
 import java.util.Scanner;
 
 public class Main {
