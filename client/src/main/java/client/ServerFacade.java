@@ -17,11 +17,11 @@ import java.nio.charset.StandardCharsets;
 
 
 public class ServerFacade {
-    private final Server server = new Server();
     static Gson gson = new Gson();
 
     public ServerFacade() {
         try {
+            Server server = new Server();
             server.run(8080);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -37,118 +37,79 @@ public class ServerFacade {
         // StandardCharsets.UTF_8.name() > JDK 7
         return result.toString(StandardCharsets.UTF_8);
     }
-    public GameData[] listGames(String authToken) throws IOException {
-        URL url = null;
+
+    private URL getURL(String urlPath) throws IOException {
+        URL url;
         try {
-            url = new URI("http://localhost:8080/game").toURL();
+            url = new URI("http://localhost:%s/%s".formatted(8080, urlPath)).toURL();
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new IOException(e);
         }
+        return url;
+    }
+
+    private <T> T getRequest(String urlPath, String authToken, Class<T> Response) throws IOException {
+        URL url = getURL(urlPath);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setReadTimeout(5000);
         connection.setRequestMethod("GET");
         connection.addRequestProperty("Authorization", authToken);
         connection.connect();
+        InputStream responseBody = connection.getInputStream();
+        return gson.fromJson(inputStreamToString(responseBody), Response);
+    }
+
+    private <S, T> T postRequest(String urlPath, String authToken, S Request, Class<T> Response) throws IOException {
+        URL url = getURL(urlPath);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setReadTimeout(5000);
+        connection.setRequestMethod("POST");
+        if (!authToken.isEmpty()) {
+            connection.addRequestProperty("Authorization", authToken);
+        }
+        connection.setDoOutput(true);
+        connection.connect();
+
+        // Write Request
+        try(OutputStream requestBody = connection.getOutputStream()) {
+            String userJson = gson.toJson(Request);
+            requestBody.write(userJson.getBytes());
+        }
+
+        // Get Response
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
             InputStream responseBody = connection.getInputStream();
-            record GamesList(GameData[] games) {}
-            GamesList gamesList = gson.fromJson(inputStreamToString(responseBody), GamesList.class);
-            return gamesList.games();
-        } else {
-            InputStream responseBody = connection.getErrorStream();
-            // Read and process error response body from InputStream ...
+            return gson.fromJson(inputStreamToString(responseBody), Response);
         }
-        return new GameData[0];
+        else { // Error
+            InputStream responseBody = connection.getErrorStream();
+            throw new IOException(inputStreamToString(responseBody));
+        }
+    }
+
+    public GameData[] listGames(String authToken) throws IOException {
+        record ListRequest(GameData[] games) {}
+        ListRequest games = getRequest("game", authToken, ListRequest.class);
+        return games.games();
     }
 
     public String register(String username, String password, String email) throws IOException {
-        URL url = null;
-        try {
-            url = new URI("http://localhost:%s/user".formatted(8080)).toURL();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setReadTimeout(5000);
-        connection.setRequestMethod("POST");
-        connection.setDoOutput(true);
-        // Set HTTP request headers, if necessary
-        // connection.addRequestProperty("Accept", "text/html");
-        connection.connect();
-        try(OutputStream requestBody = connection.getOutputStream()) {
-            UserData newUser = new UserData(username, password, email);
-            String userJson = gson.toJson(newUser);
-            requestBody.write(userJson.getBytes());
-        }
-        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            InputStream responseBody = connection.getInputStream();
-            return responseBody.toString();
-        }
-        else { // Error
-            InputStream responseBody = connection.getErrorStream();
-            throw new IOException(responseBody.toString());
-        }
+        record RegisterResponse(String user, String authToken) {}
+        RegisterResponse response = postRequest("user", "", new UserData(username, password, email), RegisterResponse.class);
+        return response.authToken();
     }
 
     public String login(String username, String password) throws IOException {
-        URL url = null;
-        try {
-            url = new URI("http://localhost:%s/session".formatted(8080)).toURL();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setReadTimeout(5000);
-        connection.setRequestMethod("POST");
-        connection.setDoOutput(true);
-        // Set HTTP request headers, if necessary
-        // connection.addRequestProperty("Accept", "text/html");
-        connection.connect();
-        try(OutputStream requestBody = connection.getOutputStream()) {
-            UserData loginRequest = new UserData(username, password, null);
-            String loginJson = gson.toJson(loginRequest);
-            requestBody.write(loginJson.getBytes());
-        }
-        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            InputStream responseBody = connection.getInputStream();
-            record LoginResponse(String authToken, String username) {}
-            LoginResponse fromJson = gson.fromJson(inputStreamToString(responseBody), LoginResponse.class);
-            return fromJson.authToken();
-        }
-        else { // Error
-            InputStream responseBody = connection.getErrorStream();
-            throw new IOException(responseBody.toString());
-        }
+        record LoginResponse(String authToken, String username) {}
+        LoginResponse response = postRequest("session", "", new UserData(username, password, ""), LoginResponse.class);
+        return response.authToken();
     }
 
     public int createGame(String authToken, String gameName) throws IOException {
-        URL url = null;
-        try {
-            url = new URI("http://localhost:%s/game".formatted(8080)).toURL();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+        record CreateResponse(int gameID) {
         }
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setReadTimeout(5000);
-        connection.setRequestMethod("POST");
-        connection.setDoOutput(true);
-        connection.addRequestProperty("Authorization", authToken);
-        connection.connect();
-        try(OutputStream requestBody = connection.getOutputStream()) {
-            String json = "{\"gameName\":\"%s\"}".formatted(gameName);
-            requestBody.write(json.getBytes());
-        }
-
-        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            InputStream responseBody = connection.getInputStream();
-            System.out.println(inputStreamToString(responseBody));
-            record CreateResponse(int gameID) {}
-            CreateResponse createResponse = gson.fromJson(responseBody.toString(), CreateResponse.class);
-            return createResponse.gameID();
-        }
-        else { // Error
-            InputStream responseBody = connection.getErrorStream();
-            throw new IOException(responseBody.toString());
-        }
+        record CreateRequest(String gameName) {}
+        CreateResponse response = postRequest("game", authToken, new CreateRequest(gameName), CreateResponse.class);
+        return response.gameID();
     }
 }
