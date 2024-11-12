@@ -106,16 +106,20 @@ public class Prelogin {
             case "create":
                 setVariable("gameName");
                 try {
-                    int gameID = server.createGame(inputs.get("gameName"));
+                    int gameID = server.createGame(authToken, inputs.get("gameName"));
                 } catch (IOException e) {
-                    System.out.println("Failed to create game!");
+                    throw new RuntimeException(e);
+                    //System.out.println("Failed to create game!" + e.getMessage());
                 }
                 break;
             case "list":
                 try {
                     GameData[] games = server.listGames(authToken);
                     for (GameData game : games) {
-                        System.out.println(game);
+                        System.out.println(EscapeSequences.SET_TEXT_BOLD + "\"" + game.gameName() + "\":" + EscapeSequences.RESET_TEXT_BOLD_FAINT);
+                        System.out.printf("\tID: %s%n", game.gameID());
+                        System.out.printf("\tPlaying as white: %s%n", game.whiteUsername());
+                        System.out.printf("\tPlaying as black: %s%n", game.blackUsername());
                     }
                 } catch (IOException e) {
                     System.out.println("Not authorized!");
