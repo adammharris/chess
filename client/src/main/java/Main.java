@@ -7,6 +7,6 @@ public class Main {
         System.out.println("♕ Welcome to 240 Chess. Type 'help' to get started.");
 
         Prelogin prelogin = new Prelogin(new Scanner(System.in));
-        prelogin.inputCommand();
+        prelogin.start();
     }
 }
