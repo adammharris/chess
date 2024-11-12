@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 
@@ -56,7 +57,12 @@ public class ServerFacade {
     }
 
     public void register(String username, String password, String email) throws IOException {
-        URL url = new URL("https://localhost:%s/user".formatted(8080));
+        URL url = null;
+        try {
+            url = new URI("http://localhost:%s/user".formatted(8080)).toURL();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setReadTimeout(5000);
         connection.setRequestMethod("POST");
@@ -65,7 +71,9 @@ public class ServerFacade {
         // connection.addRequestProperty("Accept", "text/html");
         connection.connect();
         try(OutputStream requestBody = connection.getOutputStream()) {
-            requestBody.write(gson.toJson(new UserData(username, password, email)).getBytes());
+            UserData newUser = new UserData(username, password, email);
+            String userJson = gson.toJson(newUser);
+            requestBody.write(userJson.getBytes());
         }
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
             InputStream responseBody = connection.getInputStream();

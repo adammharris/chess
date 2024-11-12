@@ -36,11 +36,12 @@ public class Prelogin {
                     System.out.print("Time to register! (Not implemented)\n");
                     try {
                         server.register("user", "pass", "email");
+                        System.out.print("Did not fail!\n");
                         // Go to Postlogin
 
                     } catch (IOException e) {
-                        //throw new RuntimeException(e);
-                        System.out.print("An error occurred! Please try again.\n");
+                        throw new RuntimeException(e);
+                        //System.out.print("An error occurred! Please try again.\n");
                     }
                     break;
                 case "login":
