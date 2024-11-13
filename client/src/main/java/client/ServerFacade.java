@@ -17,15 +17,19 @@ import java.nio.charset.StandardCharsets;
 
 
 public class ServerFacade {
-    static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
+    private static final Server server = new Server();
 
     public ServerFacade() {
         try {
-            Server server = new Server();
             server.run(8080);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void stop() {
+        server.stop();
     }
 
     private String inputStreamToString(InputStream is) throws IOException {
@@ -130,6 +134,6 @@ public class ServerFacade {
 
     public void logout(String authToken) throws IOException {
         URL url = getURL("session");
-        HttpURLConnection connection = getConnection(url, "DELETE", authToken);
+        getConnection(url, "DELETE", authToken);
     }
 }

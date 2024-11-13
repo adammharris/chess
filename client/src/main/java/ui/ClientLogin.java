@@ -6,26 +6,25 @@ import model.GameData;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.function.Consumer;
 
-public class Prelogin {
-    private static Scanner scanner;
+public class ClientLogin {
     private final static ServerFacade server = new ServerFacade();
     private static boolean keepGoing = true;
-    private static Runnable currentFunction = Prelogin::inputCommand;
+    private static Consumer<Scanner> currentFunction;
     private final static HashMap<String, String> inputs = new HashMap<>();
     private static String authToken = "";
 
-    public Prelogin(Scanner scanner) {
-        Prelogin.scanner = scanner;
-    }
-
-    public static void start() {
+    public static void start(Scanner scanner) {
+        System.out.println("♕ Welcome to 240 Chess. Type 'help' to get started.");
+        currentFunction = (Scanner) -> inputCommand(scanner);
         while (keepGoing) {
-            currentFunction.run();
+            currentFunction.accept(scanner);
         }
+        server.stop();
     }
 
-    public static void inputCommand() {
+    public static void inputCommand(Scanner scanner) {
         System.out.print("[LOGGED OUT] >>> ");
         String input = scanner.next();
         switch (input) {
@@ -43,50 +42,50 @@ public class Prelogin {
                 keepGoing = false;
                 break;
             case "register":
-                currentFunction = Prelogin::register;
+                currentFunction = (Scanner) -> register(scanner);
                 break;
             case "login":
-                currentFunction = Prelogin::login;
+                currentFunction = (Scanner) -> login(scanner);
                 break;
             default:
                 System.out.print("Command not available. Type `help` for available commands.\n");
         }
     }
 
-    private static void setVariable(String key) {
+    private static void setVariable(Scanner scanner, String key) {
         System.out.printf("Please enter %s: ", key);
         inputs.put(key, scanner.next());
     }
 
-    private static void register() {
+    private static void register(Scanner scanner) {
         System.out.print("Time to register!\n");
-        setVariable("username");
-        setVariable("password");
-        setVariable("email");
+        setVariable(scanner, "username");
+        setVariable(scanner, "password");
+        setVariable(scanner, "email");
         try {
             authToken = server.register(inputs.get("username"), inputs.get("password"), inputs.get("email"));
-            currentFunction = Prelogin::postlogin;
+            currentFunction = (Scanner) -> postlogin(scanner);
         } catch (IOException e) {
             System.out.print("Invalid input! Please try again.\n");
-            currentFunction = Prelogin::inputCommand;
+            currentFunction = (Scanner) -> inputCommand(scanner);
         }
     }
 
-    private static void login() {
+    private static void login(Scanner scanner) {
         System.out.println("Time to login!");
-        setVariable("username");
-        setVariable("password");
+        setVariable(scanner, "username");
+        setVariable(scanner, "password");
         try {
             authToken = server.login(inputs.get("username"), inputs.get("password"));
             System.out.println("Successfully logged in!");
-            currentFunction = Prelogin::postlogin;
+            currentFunction = (Scanner) -> postlogin(scanner);
         } catch (IOException e) {
             System.out.print("Invalid input! Please try again.\n");
-            currentFunction = Prelogin::inputCommand;
+            currentFunction = (Scanner) -> inputCommand(scanner);
         }
     }
 
-    private static void postlogin() {
+    private static void postlogin(Scanner scanner) {
         System.out.printf("[Logged in as %s] >>> ", inputs.get("username"));
         String input = scanner.next();
         switch (input) {
@@ -104,16 +103,18 @@ public class Prelogin {
             case "logout":
                 try {
                     server.logout(authToken);
+                    System.out.println("Logged out!");
                 } catch (IOException e) {
                     System.out.println("Logout failed!");
                 }
                 authToken = "";
-                currentFunction = Prelogin::inputCommand;
+                currentFunction = (Scanner) -> inputCommand(scanner);
                 break;
             case "create":
-                setVariable("gameName");
+                setVariable(scanner, "gameName");
                 try {
                     int gameID = server.createGame(authToken, inputs.get("gameName"));
+                    System.out.printf("Created game %s with ID %s!%n", inputs.get("gameName"), gameID);
                 } catch (IOException e) {
                     System.out.println("Failed to create game!" + e.getMessage());
                 }
@@ -132,10 +133,11 @@ public class Prelogin {
                 }
                 break;
             case "play":
-                setVariable("playerColor");
-                setVariable("gameID");
+                setVariable(scanner, "playerColor");
+                setVariable(scanner, "gameID");
                 try {
                     server.joinGame(authToken, inputs.get("playerColor"), Integer.parseInt(inputs.get("gameID")));
+                    System.out.println("Joined game!");
                 } catch (IOException e) {
                     System.out.println("Join game failed!");
                 }
