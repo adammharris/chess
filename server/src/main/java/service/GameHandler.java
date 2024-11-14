@@ -9,7 +9,7 @@ import model.*;
 public class GameHandler extends HttpHandler {
     private record JoinRequest(String playerColor, int gameID) {}
     public Object create(Request request, Response response) {
-        String acceptHeader = request.headers("Accept");
+        request.headers("Accept");
 
         String res = validateAuthToken(request, response);
         if (!res.equals("{}")) {
@@ -25,7 +25,7 @@ public class GameHandler extends HttpHandler {
     }
 
     public Object list(Request request, Response response) {
-        String acceptHeader = request.headers("Accept");
+        request.headers("Accept");
 
         String res = validateAuthToken(request, response);
         if (!res.equals("{}")) {
@@ -38,7 +38,7 @@ public class GameHandler extends HttpHandler {
     }
 
     public Object join(Request request, Response response) {
-        String acceptHeader = request.headers("Accept");
+        request.headers("Accept");
 
         String res = validateAuthToken(request, response);
         if (!res.equals("{}")) {
@@ -49,6 +49,9 @@ public class GameHandler extends HttpHandler {
 
         Gson gson = new Gson();
         JoinRequest jr = gson.fromJson(request.body(), JoinRequest.class);
+        if (jr == null) {
+            return "{\"message\":\"Error: Empty request body\"}";
+        }
         try {
             gs.updateGame(jr.playerColor, jr.gameID, request);
         } catch (DataAccessException e) {

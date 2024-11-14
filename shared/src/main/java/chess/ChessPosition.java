@@ -14,7 +14,7 @@ public class ChessPosition {
                 || row > 8
                 || col < 1
                 || col > 8) {
-            throw new RuntimeException("Out of bounds!");
+            throw new RuntimeException("Tried to access ChessPosition that was out of bounds! Row: %s, Col: %s".formatted(row, col));
         }
         this.row = row;
         this.col = col;

@@ -8,23 +8,24 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
-public class ClientLogin {
+public class Game {
     private final static ServerFacade server = new ServerFacade();
     private static boolean keepGoing = true;
     private static Consumer<Scanner> currentFunction;
     private final static HashMap<String, String> inputs = new HashMap<>();
     private static String authToken = "";
+    private static GameData currentGame;
 
     public static void start(Scanner scanner) {
         System.out.println("♕ Welcome to 240 Chess. Type 'help' to get started.");
-        currentFunction = (Scanner) -> inputCommand(scanner);
+        currentFunction = (Scanner) -> prelogin(scanner);
         while (keepGoing) {
             currentFunction.accept(scanner);
         }
         server.stop();
     }
 
-    public static void inputCommand(Scanner scanner) {
+    public static void prelogin(Scanner scanner) {
         System.out.print("[LOGGED OUT] >>> ");
         String input = scanner.next();
         switch (input) {
@@ -67,7 +68,7 @@ public class ClientLogin {
             currentFunction = (Scanner) -> postlogin(scanner);
         } catch (IOException e) {
             System.out.print("Invalid input! Please try again.\n");
-            currentFunction = (Scanner) -> inputCommand(scanner);
+            currentFunction = (Scanner) -> prelogin(scanner);
         }
     }
 
@@ -81,7 +82,7 @@ public class ClientLogin {
             currentFunction = (Scanner) -> postlogin(scanner);
         } catch (IOException e) {
             System.out.print("Invalid input! Please try again.\n");
-            currentFunction = (Scanner) -> inputCommand(scanner);
+            currentFunction = (Scanner) -> prelogin(scanner);
         }
     }
 
@@ -108,7 +109,7 @@ public class ClientLogin {
                     System.out.println("Logout failed!");
                 }
                 authToken = "";
-                currentFunction = (Scanner) -> inputCommand(scanner);
+                currentFunction = (Scanner) -> prelogin(scanner);
                 break;
             case "create":
                 setVariable(scanner, "gameName");
@@ -138,17 +139,33 @@ public class ClientLogin {
                 try {
                     server.joinGame(authToken, inputs.get("playerColor"), Integer.parseInt(inputs.get("gameID")));
                     System.out.println("Joined game!");
+                    currentGame = server.getGame(authToken, Integer.parseInt(inputs.get("gameID")));
+                    currentFunction = (Scanner) -> gameplay(scanner);
                 } catch (IOException e) {
                     System.out.println("Join game failed!");
                 }
-                // TODO: ChessGame UI
                 break;
             case "observe":
+                setVariable(scanner, "gameID");
+                try {
+                    currentGame = server.getGame(authToken, Integer.parseInt(inputs.get("gameID")));
+                    currentFunction = (Scanner) -> gameplay(scanner);
+                } catch (IOException e) {
+                    System.out.println("Game not found!");
+                }
                 break;
             default:
                 System.out.println("Command not available. Type `help` for available commands.");
                 break;
 
         }
+    }
+
+    private static void gameplay(Scanner scanner) {
+        if (currentGame == null) {
+            throw new RuntimeException("gameplay called, but there is no game!!!");
+        }
+        System.out.println(TextGraphics.constructBoard(currentGame.game().getBoard()));
+        currentFunction = (Scanner) -> postlogin(scanner); //TODO: implement gameplay
     }
 }

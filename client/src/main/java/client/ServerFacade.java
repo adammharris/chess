@@ -1,14 +1,12 @@
 package client;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import model.GameData;
 import model.UserData;
 import server.Server;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,6 +17,13 @@ import java.nio.charset.StandardCharsets;
 public class ServerFacade {
     private static final Gson gson = new Gson();
     private static final Server server = new Server();
+    private record JoinRequest(String playerColor, int gameID) {}
+    private record Empty() {}
+    private record RegisterResponse(String user, String authToken) {}
+    private record ListRequest(GameData[] games) {}
+    private record CreateResponse(int gameID) { }
+    private record CreateRequest(String gameName) {}
+    private record Messenger(String message) {}
 
     public ServerFacade() {
         try {
@@ -59,7 +64,7 @@ public class ServerFacade {
         if (!authToken.isEmpty()) {
             connection.addRequestProperty("Authorization", authToken);
         }
-        if (requestMethod.equals("POST") || requestMethod.equals("PUT")) {
+        if (requestMethod.equals("POST") || requestMethod.equals("PUT") || requestMethod.equals("DELETE")) {
             connection.setDoOutput(true);
         }
         connection.connect();
@@ -74,8 +79,11 @@ public class ServerFacade {
     }
 
     private <S, T> T postRequest(String urlPath, String authToken, S Request, Class<T> Response) throws IOException {
+        return postRequest(urlPath, authToken, Request, Response, "POST");
+    }
+    private <S, T> T postRequest(String urlPath, String authToken, S Request, Class<T> Response, String requestMethod) throws IOException {
         URL url = getURL(urlPath);
-        HttpURLConnection connection = getConnection(url, "POST", authToken);
+        HttpURLConnection connection = getConnection(url, requestMethod, authToken);
 
         // Write Request
         try(OutputStream requestBody = connection.getOutputStream()) {
@@ -87,21 +95,25 @@ public class ServerFacade {
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
             InputStream responseBody = connection.getInputStream();
             return gson.fromJson(inputStreamToString(responseBody), Response);
-        }
-        else { // Error
+        } else { // Error
             InputStream responseBody = connection.getErrorStream();
-            throw new IOException(inputStreamToString(responseBody));
+            String message = inputStreamToString(responseBody);
+            try {
+                Messenger messenger = gson.fromJson(message, Messenger.class);
+                message = messenger.message();
+            } catch (JsonSyntaxException e) {
+                message = message + " and " + e.getMessage();
+            }
+            throw new IOException(message);
         }
     }
 
     public GameData[] listGames(String authToken) throws IOException {
-        record ListRequest(GameData[] games) {}
         ListRequest games = getRequest("game", authToken, ListRequest.class);
         return games.games();
     }
 
     public String register(String username, String password, String email) throws IOException {
-        record RegisterResponse(String user, String authToken) {}
         RegisterResponse response = postRequest("user", "", new UserData(username, password, email), RegisterResponse.class);
         return response.authToken();
     }
@@ -113,27 +125,25 @@ public class ServerFacade {
     }
 
     public int createGame(String authToken, String gameName) throws IOException {
-        record CreateResponse(int gameID) {
-        }
-        record CreateRequest(String gameName) {}
         CreateResponse response = postRequest("game", authToken, new CreateRequest(gameName), CreateResponse.class);
         return response.gameID();
     }
 
     public void joinGame(String authToken, String playerColor, int gameID) throws IOException {
-        URL url = getURL("game");
-        HttpURLConnection connection = getConnection(url, "PUT", authToken);
-
-        // Write Request
-        try(OutputStream requestBody = connection.getOutputStream()) {
-            record JoinRequest(String playerColor, int gameID) {}
-            String userJson = gson.toJson(new JoinRequest(playerColor, gameID));
-            requestBody.write(userJson.getBytes());
-        }
+        postRequest("game", authToken, new JoinRequest(playerColor, gameID), Empty.class, "PUT");
     }
 
     public void logout(String authToken) throws IOException {
-        URL url = getURL("session");
-        getConnection(url, "DELETE", authToken);
+        postRequest("session", authToken, new Empty(), Empty.class, "DELETE");
+    }
+
+    public GameData getGame(String authToken, int gameID) throws IOException {
+        GameData[] games = listGames(authToken);
+        for (GameData game : games) {
+            if (game.gameID() == gameID) {
+                return game;
+            }
+        }
+        throw new IOException("Game not found");
     }
 }
