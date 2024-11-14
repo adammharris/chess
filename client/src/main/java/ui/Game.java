@@ -163,9 +163,10 @@ public class Game {
 
     private static void gameplay(Scanner scanner) {
         if (currentGame == null) {
-            throw new RuntimeException("gameplay called, but there is no game!!!");
+            throw new RuntimeException("`Game::gameplay` called, but there is no game!");
         }
-        System.out.println(TextGraphics.constructBoard(currentGame.game().getBoard()));
+        System.out.println(TextGraphics.constructBoard(currentGame.game().getBoard(), false));
+        System.out.println(TextGraphics.constructBoard(currentGame.game().getBoard(), true));
         currentFunction = (Scanner) -> postlogin(scanner); //TODO: implement gameplay
     }
 }

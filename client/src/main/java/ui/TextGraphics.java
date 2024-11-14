@@ -12,8 +12,10 @@ public class TextGraphics {
     private static final String BORDER_TEXT_COLOR = SET_TEXT_COLOR_WHITE;
     private static final String VERTICAL_BORDER = "ABCDEFGH";
     private static final String HORIZONTAL_BORDER = "12345678";
-    private static final String WHITE_SQUARE = SET_BG_COLOR_LIGHT_GREY;
-    private static final String BLACK_SQUARE = SET_BG_COLOR_DARK_GREY;
+    private static final String WHITE_SQUARE = SET_BG_COLOR_WHITE;
+    private static final String BLACK_SQUARE = SET_BG_COLOR_LIGHT_GREY;
+    private static final String WHITE_PIECE_COLOR = SET_TEXT_COLOR_DARK_GREY;
+    private static final String BLACK_PIECE_COLOR = SET_TEXT_COLOR_BLACK;
 
     private static String getPieceChar(ChessGame.TeamColor color, ChessPiece.PieceType type) {
         if (color == ChessGame.TeamColor.WHITE) {
@@ -34,23 +36,39 @@ public class TextGraphics {
         };
     }
 
-    private static String getCharAtPosition(ChessBoard board, int row, int col) {
+    private static String getCharAtPosition(ChessBoard board, int row, int col, boolean orientedToWhite) {
         StringBuilder sb = new StringBuilder();
+        String verticalBorder;
+        String horizontalBorder;
+        if (orientedToWhite) {
+            verticalBorder = VERTICAL_BORDER;
+            sb.append(HORIZONTAL_BORDER);
+            sb.reverse();
+            horizontalBorder = sb.toString();
+            sb.setLength(0);
+        } else {
+            sb.append(VERTICAL_BORDER);
+            sb.reverse();
+            verticalBorder = sb.toString();
+            sb.setLength(0);
+            horizontalBorder = HORIZONTAL_BORDER;
+        }
+
         if (row == 0 || row == 9) {
             if (col == 0) {
-                sb.append(BORDER_COLOR).append(BORDER_TEXT_COLOR);
+                sb.append(BORDER_COLOR).append(BORDER_TEXT_COLOR).append(SET_TEXT_BOLD);
             }
             if (col > 0 && col < 9) {
-                sb.append(" ").append(VERTICAL_BORDER.charAt(col - 1)).append(" ");
+                sb.append(" ").append(verticalBorder.charAt(col - 1)).append(" ");
             } else {
                 sb.append(EMPTY);
             }
             if (col == 9) {
-                sb.append(RESET_BG_COLOR).append(RESET_TEXT_COLOR);
+                sb.append(RESET_BG_COLOR).append(RESET_TEXT_COLOR).append(RESET_TEXT_BOLD_FAINT);
             }
         } else if (col == 0 || col == 9) {
             sb.append(BORDER_TEXT_COLOR).append(BORDER_COLOR);
-            sb.append(" ").append(HORIZONTAL_BORDER.charAt(row - 1)).append(" ");
+            sb.append(" ").append(horizontalBorder.charAt(row - 1)).append(" ");
             sb.append(RESET_TEXT_COLOR).append(RESET_BG_COLOR);
         } else {
             if ((row + col) % 2 == 0) {
@@ -58,14 +76,20 @@ public class TextGraphics {
             } else {
                 sb.append(WHITE_SQUARE);
             }
-            ChessPiece thisPiece = board.getPiece(new ChessPosition(row, col));
+            ChessPiece thisPiece;
+            if (orientedToWhite) {
+                thisPiece = board.getPiece(new ChessPosition(9 - row, 9 - col));
+            } else {
+                thisPiece = board.getPiece(new ChessPosition(row, col));
+            }
+
             if (thisPiece == null) {
                 sb.append(EMPTY);
             } else {
                 if (thisPiece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                    sb.append(SET_TEXT_COLOR_WHITE);
+                    sb.append(WHITE_PIECE_COLOR);
                 } else {
-                    sb.append(SET_TEXT_COLOR_BLACK);
+                    sb.append(BLACK_PIECE_COLOR);
                 }
                 sb.append(getPieceChar(thisPiece.getTeamColor(), thisPiece.getPieceType()));
             }
@@ -73,7 +97,7 @@ public class TextGraphics {
         return sb.toString();
     }
 
-    public static String constructBoard(ChessBoard board) {
+    public static String constructBoard(ChessBoard board, boolean orientedToWhite) {
         StringBuilder sb = new StringBuilder();
 
         sb.append(RESET_BG_COLOR);
@@ -82,7 +106,7 @@ public class TextGraphics {
 
         for (int row = 0; row <= 9; row++) {
             for (int col = 0; col <= 9; col++) {
-                sb.append(getCharAtPosition(board, row, col));
+                sb.append(getCharAtPosition(board, row, col, orientedToWhite));
             }
             sb.append(EMPTY);
             sb.append('\n');
