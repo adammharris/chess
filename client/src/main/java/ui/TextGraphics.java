@@ -9,9 +9,11 @@ import static ui.EscapeSequences.*;
 
 public class TextGraphics {
     private static final String BORDER_COLOR = SET_BG_COLOR_DARK_GREEN;
-    private static final String BORDER_TEXT_COLOR = SET_TEXT_COLOR_BLACK;
+    private static final String BORDER_TEXT_COLOR = SET_TEXT_COLOR_WHITE;
     private static final String VERTICAL_BORDER = "ABCDEFGH";
     private static final String HORIZONTAL_BORDER = "12345678";
+    private static final String WHITE_SQUARE = SET_BG_COLOR_LIGHT_GREY;
+    private static final String BLACK_SQUARE = SET_BG_COLOR_DARK_GREY;
 
     private static String getPieceChar(ChessGame.TeamColor color, ChessPiece.PieceType type) {
         if (color == ChessGame.TeamColor.WHITE) {
@@ -33,22 +35,42 @@ public class TextGraphics {
     }
 
     private static String getCharAtPosition(ChessBoard board, int row, int col) {
+        StringBuilder sb = new StringBuilder();
         if (row == 0 || row == 9) {
+            if (col == 0) {
+                sb.append(BORDER_COLOR).append(BORDER_TEXT_COLOR);
+            }
             if (col > 0 && col < 9) {
-                return VERTICAL_BORDER.substring(col - 1, col);
+                sb.append(" ").append(VERTICAL_BORDER.charAt(col - 1)).append(" ");
             } else {
-                return EMPTY;
+                sb.append(EMPTY);
+            }
+            if (col == 9) {
+                sb.append(RESET_BG_COLOR).append(RESET_TEXT_COLOR);
             }
         } else if (col == 0 || col == 9) {
-            return HORIZONTAL_BORDER.substring(row - 1, row);
+            sb.append(BORDER_TEXT_COLOR).append(BORDER_COLOR);
+            sb.append(" ").append(HORIZONTAL_BORDER.charAt(row - 1)).append(" ");
+            sb.append(RESET_TEXT_COLOR).append(RESET_BG_COLOR);
         } else {
+            if ((row + col) % 2 == 0) {
+                sb.append(BLACK_SQUARE);
+            } else {
+                sb.append(WHITE_SQUARE);
+            }
             ChessPiece thisPiece = board.getPiece(new ChessPosition(row, col));
             if (thisPiece == null) {
-                return EMPTY;
+                sb.append(EMPTY);
             } else {
-                return getPieceChar(thisPiece.getTeamColor(), thisPiece.getPieceType());
+                if (thisPiece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                    sb.append(SET_TEXT_COLOR_WHITE);
+                } else {
+                    sb.append(SET_TEXT_COLOR_BLACK);
+                }
+                sb.append(getPieceChar(thisPiece.getTeamColor(), thisPiece.getPieceType()));
             }
         }
+        return sb.toString();
     }
 
     public static String constructBoard(ChessBoard board) {
@@ -57,8 +79,6 @@ public class TextGraphics {
         sb.append(RESET_BG_COLOR);
         sb.append(RESET_TEXT_COLOR);
         sb.append('\n');
-        sb.append(BORDER_COLOR);
-        sb.append(BORDER_TEXT_COLOR);
 
         for (int row = 0; row <= 9; row++) {
             for (int col = 0; col <= 9; col++) {
