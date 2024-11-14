@@ -35,16 +35,16 @@ public class TextGraphics {
     private static String getCharAtPosition(ChessBoard board, int row, int col) {
         if (row == 0 || row == 9) {
             if (col > 0 && col < 9) {
-                return VERTICAL_BORDER.substring(col - 1, col - 1);
+                return VERTICAL_BORDER.substring(col - 1, col);
             } else {
-                return " ";
+                return EMPTY;
             }
         } else if (col == 0 || col == 9) {
-            return HORIZONTAL_BORDER.substring(row - 1, row - 1);
+            return HORIZONTAL_BORDER.substring(row - 1, row);
         } else {
             ChessPiece thisPiece = board.getPiece(new ChessPosition(row, col));
             if (thisPiece == null) {
-                return " ";
+                return EMPTY;
             } else {
                 return getPieceChar(thisPiece.getTeamColor(), thisPiece.getPieceType());
             }
@@ -54,6 +54,9 @@ public class TextGraphics {
     public static String constructBoard(ChessBoard board) {
         StringBuilder sb = new StringBuilder();
 
+        sb.append(RESET_BG_COLOR);
+        sb.append(RESET_TEXT_COLOR);
+        sb.append('\n');
         sb.append(BORDER_COLOR);
         sb.append(BORDER_TEXT_COLOR);
 
@@ -61,6 +64,10 @@ public class TextGraphics {
             for (int col = 0; col <= 9; col++) {
                 sb.append(getCharAtPosition(board, row, col));
             }
+            sb.append(EMPTY);
+            sb.append('\n');
+            sb.append(RESET_BG_COLOR);
+            sb.append(RESET_TEXT_COLOR);
         }
         return sb.toString();
     }
