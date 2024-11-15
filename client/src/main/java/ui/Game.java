@@ -4,7 +4,9 @@ import client.ServerFacade;
 import model.GameData;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
@@ -14,6 +16,7 @@ public class Game {
     private static Consumer<Scanner> currentFunction;
     private final static HashMap<String, String> inputs = new HashMap<>();
     private static String authToken = "";
+    private final static ArrayList<GameData> games = new ArrayList<>();
     private static GameData currentGame;
 
     public static void start(Scanner scanner) {
@@ -87,8 +90,14 @@ public class Game {
     }
 
     private static void postlogin(Scanner scanner) {
+        try {
+            games.addAll(List.of(server.listGames(authToken)));
+        } catch (IOException e) {
+            System.out.println("Failed to login!");
+        }
         System.out.printf("[Logged in as %s] >>> ", inputs.get("username"));
         String input = scanner.next();
+        int gameIndex;
         switch (input) {
             case "help":
                 System.out.print("""
@@ -114,50 +123,48 @@ public class Game {
             case "create":
                 setVariable(scanner, "gameName");
                 try {
-                    int gameID = server.createGame(authToken, inputs.get("gameName"));
-                    System.out.printf("Created game %s with ID %s!%n", inputs.get("gameName"), gameID);
+                    server.createGame(authToken, inputs.get("gameName"));
+                    System.out.printf("Created game %s!", inputs.get("gameName"));
                 } catch (IOException e) {
                     System.out.println("Failed to create game!" + e.getMessage());
                 }
                 break;
             case "list":
+                games.clear();
                 try {
-                    GameData[] games = server.listGames(authToken);
-                    for (GameData game : games) {
-                        System.out.println(EscapeSequences.SET_TEXT_BOLD + "\"" + game.gameName() + "\":" + EscapeSequences.RESET_TEXT_BOLD_FAINT);
-                        System.out.printf("\tID: %s%n", game.gameID());
-                        System.out.printf("\tPlaying as white: %s%n", game.whiteUsername());
-                        System.out.printf("\tPlaying as black: %s%n", game.blackUsername());
-                    }
+                    games.addAll(List.of(server.listGames(authToken)));
                 } catch (IOException e) {
-                    System.out.println("Not authorized!");
+                    System.out.println("Failed to update list of games!");
+                }
+                for (GameData game : games) {
+                    String name = "%s: \"%s\"".formatted(games.indexOf(game) + 1, game.gameName());
+                    System.out.println(EscapeSequences.SET_TEXT_BOLD + name + EscapeSequences.RESET_TEXT_BOLD_FAINT);
+                    System.out.printf("\tPlaying as white: %s%n", game.whiteUsername());
+                    System.out.printf("\tPlaying as black: %s%n", game.blackUsername());
                 }
                 break;
             case "play":
                 setVariable(scanner, "playerColor");
-                setVariable(scanner, "gameID");
+                setVariable(scanner, "number");
+                gameIndex = Integer.parseInt(inputs.get("number"));
                 try {
-                    server.joinGame(authToken, inputs.get("playerColor"), Integer.parseInt(inputs.get("gameID")));
+                    currentGame = games.get(gameIndex - 1);
+                    server.joinGame(authToken, inputs.get("playerColor"), currentGame.gameID());
                     System.out.println("Joined game!");
-                    currentGame = server.getGame(authToken, Integer.parseInt(inputs.get("gameID")));
                     currentFunction = (Scanner) -> gameplay(scanner);
                 } catch (IOException e) {
                     System.out.println("Join game failed!");
                 }
                 break;
             case "observe":
-                setVariable(scanner, "gameID");
-                try {
-                    currentGame = server.getGame(authToken, Integer.parseInt(inputs.get("gameID")));
-                    currentFunction = (Scanner) -> gameplay(scanner);
-                } catch (IOException e) {
-                    System.out.println("Game not found!");
-                }
+                setVariable(scanner, "number");
+                gameIndex = Integer.parseInt(inputs.get("number"));
+                currentGame = games.get(gameIndex - 1);
+                currentFunction = (Scanner) -> gameplay(scanner);
                 break;
             default:
                 System.out.println("Command not available. Type `help` for available commands.");
                 break;
-
         }
     }
 
