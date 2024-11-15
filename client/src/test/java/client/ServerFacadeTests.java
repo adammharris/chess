@@ -28,6 +28,7 @@ public class ServerFacadeTests {
         facade.clear();
         authToken = facade.register("test", "test", "test");
         gameID = facade.createGame(authToken, "test");
+        //facade.logout(authToken);
     }
 
     @AfterAll
@@ -95,8 +96,8 @@ public class ServerFacadeTests {
     }
 
     @Test
-    void logout() throws IOException {
-        String authToken = facade.login("test", "test");
+    void logout() {
+        //String authToken = facade.login("test", "test");
         assertDoesNotThrow(() -> facade.logout(authToken));
     }
 

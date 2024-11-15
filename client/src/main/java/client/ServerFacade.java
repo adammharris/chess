@@ -50,11 +50,11 @@ public class ServerFacade {
 
     private HttpURLConnection getConnection(URL url, String requestMethod, String authToken) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setReadTimeout(5000);
-        connection.setRequestMethod(requestMethod);
         if (!authToken.isEmpty()) {
             connection.addRequestProperty("Authorization", authToken);
         }
+        connection.setReadTimeout(5000);
+        connection.setRequestMethod(requestMethod);
         if (requestMethod.equals("POST") || requestMethod.equals("PUT") || requestMethod.equals("DELETE")) {
             connection.setDoOutput(true);
         }
@@ -69,11 +69,14 @@ public class ServerFacade {
         URL url = getURL(urlPath);
         HttpURLConnection connection = getConnection(url, requestMethod, authToken);
 
-        // Write request
-        try(OutputStream requestBody = connection.getOutputStream()) {
-            String userJson = GSON.toJson(request);
-            requestBody.write(userJson.getBytes());
+        if (!requestMethod.equals("DELETE")) {
+            // Write request
+            try(OutputStream requestBody = connection.getOutputStream()) {
+                String userJson = GSON.toJson(request);
+                requestBody.write(userJson.getBytes());
+            }
         }
+
 
         // Get response
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
