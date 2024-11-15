@@ -6,5 +6,6 @@ public class Main {
         server.Server server = new server.Server();
         int port = server.run(8080);
         Game.start(port, new Scanner(System.in));
+        server.stop();
     }
 }
