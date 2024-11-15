@@ -126,7 +126,7 @@ public class Game {
                         Help\t\tDisplays list of possible commands.
                         Logout\t\tLogs out the user and returns to previous screen.
                         Create\t\tCreate a chess game so you can join it and start playing!
-                        List\t\tLists all the GAMES that currently exist on the server.
+                        List\t\tLists all the games that currently exist on the server.
                         Play\t\tJoin a created game and start playing!
                         Observe\t\tView a game that is being played!
                         """);
@@ -146,7 +146,7 @@ public class Game {
                     setVariable(scanner, "gameName");
                     server.createGame(authToken, INPUTS.get("gameName"));
                     refreshGames();
-                    System.out.printf("Created game %s!", INPUTS.get("gameName"));
+                    System.out.printf("Created game %s!\n", INPUTS.get("gameName"));
                 } catch (IOException e) {
                     System.out.println("Failed to create game!" + e.getMessage());
                 }
@@ -155,7 +155,7 @@ public class Game {
                 try {
                     refreshGames();
                 } catch (IOException e) {
-                    System.out.println("Failed to update list of GAMES!");
+                    System.out.println("Failed to update list of games!");
                 }
                 for (GameData game : GAMES) {
                     String name = "%s: \"%s\"".formatted(GAMES.indexOf(game) + 1, game.gameName());
