@@ -71,12 +71,13 @@ public class TextGraphics {
             sb.append(" ").append(horizontalBorder.charAt(row - 1)).append(" ");
             sb.append(RESET_TEXT_COLOR).append(RESET_BG_COLOR);
         } else {
-            if ((row + col) % 2 == 0) {
+            if ((row + col) % 2 == 1) {
                 sb.append(BLACK_SQUARE);
             } else {
                 sb.append(WHITE_SQUARE);
             }
             ChessPiece thisPiece;
+            col = 9 - col;
             if (orientedToWhite) {
                 thisPiece = board.getPiece(new ChessPosition(9 - row, 9 - col));
             } else {
