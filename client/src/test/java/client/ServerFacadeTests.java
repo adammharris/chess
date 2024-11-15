@@ -2,8 +2,6 @@ package client;
 
 import model.GameData;
 import org.junit.jupiter.api.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import server.Server;
 
 import java.io.IOException;
@@ -12,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerFacadeTests {
 
-    private static final Logger log = LoggerFactory.getLogger(ServerFacadeTests.class);
     private static Server server;
     private static ServerFacade facade = null;
     private static String authToken;
@@ -24,16 +21,18 @@ public class ServerFacadeTests {
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
         facade = new ServerFacade(port);
-        try {
-            authToken = facade.register("test", "test", "test");
-            gameID = facade.createGame(authToken, "test");
-        } catch (Exception e) {
-            log.info("Database prep failed! (May already exist)");
-        }
+    }
+
+    @BeforeEach
+    void clear() throws IOException {
+        facade.clear();
+        authToken = facade.register("test", "test", "test");
+        gameID = facade.createGame(authToken, "test");
     }
 
     @AfterAll
-    static void stopServer() {
+    static void stopServer() throws IOException {
+        facade.clear();
         server.stop();
     }
 

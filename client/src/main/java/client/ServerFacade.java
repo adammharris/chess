@@ -124,4 +124,8 @@ public class ServerFacade {
     public void logout(String authToken) throws IOException {
         postRequest("session", authToken, new Empty(), Empty.class, "DELETE");
     }
+
+    public void clear() throws IOException {
+        postRequest("db", "", new Empty(), Empty.class, "DELETE");
+    }
 }
