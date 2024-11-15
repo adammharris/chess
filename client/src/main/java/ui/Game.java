@@ -14,20 +14,20 @@ public class Game {
     private static ServerFacade server = null;
     private static boolean keepGoing = true;
     private static Consumer<Scanner> currentFunction;
-    private final static HashMap<String, String> inputs = new HashMap<>();
+    private final static HashMap<String, String> INPUTS = new HashMap<>();
     private static String authToken = "";
-    private final static ArrayList<GameData> games = new ArrayList<>();
+    private final static ArrayList<GameData> GAMES = new ArrayList<>();
     private static GameData currentGame;
 
     private static void refreshGames() throws IOException {
-        games.clear();
-        games.addAll(List.of(server.listGames(authToken)));
+        GAMES.clear();
+        GAMES.addAll(List.of(server.listGames(authToken)));
     }
 
     public static void start(int port, Scanner scanner) {
         server = new ServerFacade(port);
         System.out.println("♕ Welcome to 240 Chess. Type 'help' to get started.");
-        currentFunction = (Scanner) -> prelogin(scanner);
+        currentFunction = (scan) -> prelogin(scanner);
         while (keepGoing) {
             currentFunction.accept(scanner);
         }
@@ -42,7 +42,7 @@ public class Game {
                         Command\t\tDescription
                         Help\t\tDisplays list of possible commands.
                         Quit\t\tExits the program.
-                        Login\t\tAsks for login information and grants access to chess games.
+                        Login\t\tAsks for login information and grants access to chess GAMES.
                         Register\tAsks for registration information, then logs in.
                         """);
                 break;
@@ -51,10 +51,10 @@ public class Game {
                 keepGoing = false;
                 break;
             case "register":
-                currentFunction = (Scanner) -> register(scanner);
+                currentFunction = (scan) -> register(scanner);
                 break;
             case "login":
-                currentFunction = (Scanner) -> login(scanner);
+                currentFunction = (scan) -> login(scanner);
                 break;
             default:
                 System.out.print("Command not available. Type `help` for available commands.\n");
@@ -64,21 +64,21 @@ public class Game {
     private static void setVariable(Scanner scanner, String key) throws IOException {
         if (key.equals("playerColor")) {
             System.out.print("Please enter player color (`WHITE` or `BLACK`): ");
-            inputs.put(key, scanner.next());
-            if (!(inputs.get("playerColor").equals("WHITE") || inputs.get("playerColor").equals("BLACK"))) {
+            INPUTS.put(key, scanner.next());
+            if (!(INPUTS.get("playerColor").equals("WHITE") || INPUTS.get("playerColor").equals("BLACK"))) {
                 throw new IOException("Invalid input! (Not a player color)");
             }
         } else if (key.equals("number")) {
-            System.out.printf("Please enter the number of the game (between 1 and %s): ", games.size());
-            inputs.put(key, scanner.next());
+            System.out.printf("Please enter the number of the game (between 1 and %s): ", GAMES.size());
+            INPUTS.put(key, scanner.next());
             try {
-                Integer.parseInt(inputs.get(key));
+                Integer.parseInt(INPUTS.get(key));
             } catch (NumberFormatException e) {
                 throw new IOException(e);
             }
         } else {
             System.out.printf("Please enter %s: ", key);
-            inputs.put(key, scanner.next());
+            INPUTS.put(key, scanner.next());
         }
     }
 
@@ -88,11 +88,11 @@ public class Game {
             setVariable(scanner, "username");
             setVariable(scanner, "password");
             setVariable(scanner, "email");
-            authToken = server.register(inputs.get("username"), inputs.get("password"), inputs.get("email"));
-            currentFunction = (Scanner) -> postlogin(scanner);
+            authToken = server.register(INPUTS.get("username"), INPUTS.get("password"), INPUTS.get("email"));
+            currentFunction = (scan) -> postlogin(scanner);
         } catch (IOException e) {
             System.out.print("Invalid input! Please try again.\n");
-            currentFunction = (Scanner) -> prelogin(scanner);
+            currentFunction = (scan) -> prelogin(scanner);
         }
     }
 
@@ -101,12 +101,12 @@ public class Game {
         try {
             setVariable(scanner, "username");
             setVariable(scanner, "password");
-            authToken = server.login(inputs.get("username"), inputs.get("password"));
+            authToken = server.login(INPUTS.get("username"), INPUTS.get("password"));
             System.out.println("Successfully logged in!");
-            currentFunction = (Scanner) -> postlogin(scanner);
+            currentFunction = (scan) -> postlogin(scanner);
         } catch (IOException e) {
             System.out.print("Invalid input! Please try again.\n");
-            currentFunction = (Scanner) -> prelogin(scanner);
+            currentFunction = (scan) -> prelogin(scanner);
         }
     }
 
@@ -116,7 +116,7 @@ public class Game {
         } catch (IOException e) {
             System.out.println("Failed to login!");
         }
-        System.out.printf("[Logged in as %s] >>> ", inputs.get("username"));
+        System.out.printf("[Logged in as %s] >>> ", INPUTS.get("username"));
         String input = scanner.next();
         int gameIndex;
         switch (input) {
@@ -126,7 +126,7 @@ public class Game {
                         Help\t\tDisplays list of possible commands.
                         Logout\t\tLogs out the user and returns to previous screen.
                         Create\t\tCreate a chess game so you can join it and start playing!
-                        List\t\tLists all the games that currently exist on the server.
+                        List\t\tLists all the GAMES that currently exist on the server.
                         Play\t\tJoin a created game and start playing!
                         Observe\t\tView a game that is being played!
                         """);
@@ -139,14 +139,14 @@ public class Game {
                     System.out.println("Logout failed!");
                 }
                 authToken = "";
-                currentFunction = (Scanner) -> prelogin(scanner);
+                currentFunction = (scan) -> prelogin(scanner);
                 break;
             case "create":
                 try {
                     setVariable(scanner, "gameName");
-                    server.createGame(authToken, inputs.get("gameName"));
+                    server.createGame(authToken, INPUTS.get("gameName"));
                     refreshGames();
-                    System.out.printf("Created game %s!", inputs.get("gameName"));
+                    System.out.printf("Created game %s!", INPUTS.get("gameName"));
                 } catch (IOException e) {
                     System.out.println("Failed to create game!" + e.getMessage());
                 }
@@ -155,10 +155,10 @@ public class Game {
                 try {
                     refreshGames();
                 } catch (IOException e) {
-                    System.out.println("Failed to update list of games!");
+                    System.out.println("Failed to update list of GAMES!");
                 }
-                for (GameData game : games) {
-                    String name = "%s: \"%s\"".formatted(games.indexOf(game) + 1, game.gameName());
+                for (GameData game : GAMES) {
+                    String name = "%s: \"%s\"".formatted(GAMES.indexOf(game) + 1, game.gameName());
                     System.out.println(EscapeSequences.SET_TEXT_BOLD + name + EscapeSequences.RESET_TEXT_BOLD_FAINT);
                     System.out.printf("\tPlaying as white: %s%n", game.whiteUsername());
                     System.out.printf("\tPlaying as black: %s%n", game.blackUsername());
@@ -168,11 +168,11 @@ public class Game {
                 try {
                     setVariable(scanner, "playerColor");
                     setVariable(scanner, "number");
-                    gameIndex = Integer.parseInt(inputs.get("number"));
-                    currentGame = games.get(gameIndex - 1);
-                    server.joinGame(authToken, inputs.get("playerColor"), currentGame.gameID());
+                    gameIndex = Integer.parseInt(INPUTS.get("number"));
+                    currentGame = GAMES.get(gameIndex - 1);
+                    server.joinGame(authToken, INPUTS.get("playerColor"), currentGame.gameID());
                     System.out.println("Joined game!");
-                    currentFunction = (Scanner) -> gameplay(scanner);
+                    currentFunction = (scan) -> gameplay(scanner);
                 } catch (Exception e) {
                     System.out.println("Join game failed!");
                 }
@@ -180,9 +180,9 @@ public class Game {
             case "observe":
                 try {
                     setVariable(scanner, "number");
-                    gameIndex = Integer.parseInt(inputs.get("number"));
-                    currentGame = games.get(gameIndex - 1);
-                    currentFunction = (Scanner) -> gameplay(scanner);
+                    gameIndex = Integer.parseInt(INPUTS.get("number"));
+                    currentGame = GAMES.get(gameIndex - 1);
+                    currentFunction = (scan) -> gameplay(scanner);
                 } catch (Exception e) {
                     System.out.println("Invalid input!");
                 }
@@ -199,6 +199,6 @@ public class Game {
         }
         System.out.println(TextGraphics.constructBoard(currentGame.game().getBoard(), false));
         System.out.println(TextGraphics.constructBoard(currentGame.game().getBoard(), true));
-        currentFunction = (Scanner) -> postlogin(scanner); //TODO: implement gameplay
+        currentFunction = (scan) -> postlogin(scanner);
     }
 }

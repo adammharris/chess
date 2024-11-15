@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 
 public class ServerFacade {
     private static int port = 8080;
-    private static final Gson gson = new Gson();
+    private static final Gson GSON = new Gson();
     private record JoinRequest(String playerColor, int gameID) {}
     private record Empty() {}
     private record RegisterResponse(String user, String authToken) {}
@@ -62,28 +62,28 @@ public class ServerFacade {
         return connection;
     }
 
-    private <S, T> T postRequest(String urlPath, String authToken, S Request, Class<T> Response) throws IOException {
-        return postRequest(urlPath, authToken, Request, Response, "POST");
+    private <S, T> T postRequest(String urlPath, String authToken, S request, Class<T> response) throws IOException {
+        return postRequest(urlPath, authToken, request, response, "POST");
     }
-    private <S, T> T postRequest(String urlPath, String authToken, S Request, Class<T> Response, String requestMethod) throws IOException {
+    private <S, T> T postRequest(String urlPath, String authToken, S request, Class<T> response, String requestMethod) throws IOException {
         URL url = getURL(urlPath);
         HttpURLConnection connection = getConnection(url, requestMethod, authToken);
 
-        // Write Request
+        // Write request
         try(OutputStream requestBody = connection.getOutputStream()) {
-            String userJson = gson.toJson(Request);
+            String userJson = GSON.toJson(request);
             requestBody.write(userJson.getBytes());
         }
 
-        // Get Response
+        // Get response
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
             InputStream responseBody = connection.getInputStream();
-            return gson.fromJson(inputStreamToString(responseBody), Response);
+            return GSON.fromJson(inputStreamToString(responseBody), response);
         } else { // Error
             InputStream responseBody = connection.getErrorStream();
             String message = inputStreamToString(responseBody);
             try {
-                Messenger messenger = gson.fromJson(message, Messenger.class);
+                Messenger messenger = GSON.fromJson(message, Messenger.class);
                 message = messenger.message();
             } catch (JsonSyntaxException e) {
                 message = message + " and " + e.getMessage();
@@ -96,7 +96,7 @@ public class ServerFacade {
         URL url = getURL("game");
         HttpURLConnection connection = getConnection(url, "GET", authToken);
         InputStream responseBody = connection.getInputStream();
-        ListRequest games = gson.fromJson(inputStreamToString(responseBody), ListRequest.class);
+        ListRequest games = GSON.fromJson(inputStreamToString(responseBody), ListRequest.class);
         //ListRequest games = getRequest("game", authToken, ListRequest.class);
         return games.games();
     }
