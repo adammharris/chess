@@ -49,10 +49,18 @@ public class ServerFacadeTests {
         assertEquals(36, authToken.length());
     }
 
+    @Test void badRegister() {
+        assertThrows(IOException.class, () -> facade.register(null, null, null));
+    }
+
     @Test
     void listGames() throws IOException {
         GameData[] games = facade.listGames(authToken);
         assertNotNull(games);
+    }
+    @Test
+    void badListGames() {
+        assertThrows(IOException.class, () -> facade.listGames(""));
     }
 
     @Test
@@ -63,9 +71,18 @@ public class ServerFacadeTests {
     }
 
     @Test
+    void badLogin() {
+        assertThrows(IOException.class, () -> facade.login("doesNotExist", "atAll"));
+    }
+
+    @Test
     void createGame() throws IOException {
         int gameID = facade.createGame(authToken, "test1");
         assertTrue(gameID > 99999 && gameID < 1000000);
+    }
+    @Test
+    void badCreateGame() {
+        assertThrows(IOException.class, () -> facade.createGame("unauthorized", "test1"));
     }
 
     @Test
@@ -74,9 +91,19 @@ public class ServerFacadeTests {
     }
 
     @Test
+    void badJoinGame() {
+        assertThrows(IOException.class, () -> facade.joinGame("unauthorized", "WHITE", gameID));
+    }
+
+    @Test
     void logout() throws IOException {
         String authToken = facade.login("test", "test");
         assertDoesNotThrow(() -> facade.logout(authToken));
+    }
+
+    @Test
+    void badLogout() {
+        assertThrows(IOException.class, () -> facade.logout("unauthorized"));
     }
 
 }
