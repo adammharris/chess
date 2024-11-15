@@ -11,7 +11,7 @@ import java.util.Scanner;
 import java.util.function.Consumer;
 
 public class Game {
-    private final static ServerFacade server = new ServerFacade();
+    private static ServerFacade server = null;
     private static boolean keepGoing = true;
     private static Consumer<Scanner> currentFunction;
     private final static HashMap<String, String> inputs = new HashMap<>();
@@ -19,13 +19,18 @@ public class Game {
     private final static ArrayList<GameData> games = new ArrayList<>();
     private static GameData currentGame;
 
-    public static void start(Scanner scanner) {
+    private static void refreshGames() throws IOException {
+        games.clear();
+        games.addAll(List.of(server.listGames(authToken)));
+    }
+
+    public static void start(int port, Scanner scanner) {
+        server = new ServerFacade(port);
         System.out.println("♕ Welcome to 240 Chess. Type 'help' to get started.");
         currentFunction = (Scanner) -> prelogin(scanner);
         while (keepGoing) {
             currentFunction.accept(scanner);
         }
-        server.stop();
     }
 
     public static void prelogin(Scanner scanner) {
@@ -56,17 +61,33 @@ public class Game {
         }
     }
 
-    private static void setVariable(Scanner scanner, String key) {
-        System.out.printf("Please enter %s: ", key);
-        inputs.put(key, scanner.next());
+    private static void setVariable(Scanner scanner, String key) throws IOException {
+        if (key.equals("playerColor")) {
+            System.out.print("Please enter player color (`WHITE` or `BLACK`): ");
+            inputs.put(key, scanner.next());
+            if (!(inputs.get("playerColor").equals("WHITE") || inputs.get("playerColor").equals("BLACK"))) {
+                throw new IOException("Invalid input! (Not a player color)");
+            }
+        } else if (key.equals("number")) {
+            System.out.printf("Please enter the number of the game (between 1 and %s): ", games.size());
+            inputs.put(key, scanner.next());
+            try {
+                Integer.parseInt(inputs.get(key));
+            } catch (NumberFormatException e) {
+                throw new IOException(e);
+            }
+        } else {
+            System.out.printf("Please enter %s: ", key);
+            inputs.put(key, scanner.next());
+        }
     }
 
     private static void register(Scanner scanner) {
         System.out.print("Time to register!\n");
-        setVariable(scanner, "username");
-        setVariable(scanner, "password");
-        setVariable(scanner, "email");
         try {
+            setVariable(scanner, "username");
+            setVariable(scanner, "password");
+            setVariable(scanner, "email");
             authToken = server.register(inputs.get("username"), inputs.get("password"), inputs.get("email"));
             currentFunction = (Scanner) -> postlogin(scanner);
         } catch (IOException e) {
@@ -77,9 +98,9 @@ public class Game {
 
     private static void login(Scanner scanner) {
         System.out.println("Time to login!");
-        setVariable(scanner, "username");
-        setVariable(scanner, "password");
         try {
+            setVariable(scanner, "username");
+            setVariable(scanner, "password");
             authToken = server.login(inputs.get("username"), inputs.get("password"));
             System.out.println("Successfully logged in!");
             currentFunction = (Scanner) -> postlogin(scanner);
@@ -91,7 +112,7 @@ public class Game {
 
     private static void postlogin(Scanner scanner) {
         try {
-            games.addAll(List.of(server.listGames(authToken)));
+            refreshGames();
         } catch (IOException e) {
             System.out.println("Failed to login!");
         }
@@ -121,18 +142,18 @@ public class Game {
                 currentFunction = (Scanner) -> prelogin(scanner);
                 break;
             case "create":
-                setVariable(scanner, "gameName");
                 try {
+                    setVariable(scanner, "gameName");
                     server.createGame(authToken, inputs.get("gameName"));
+                    refreshGames();
                     System.out.printf("Created game %s!", inputs.get("gameName"));
                 } catch (IOException e) {
                     System.out.println("Failed to create game!" + e.getMessage());
                 }
                 break;
             case "list":
-                games.clear();
                 try {
-                    games.addAll(List.of(server.listGames(authToken)));
+                    refreshGames();
                 } catch (IOException e) {
                     System.out.println("Failed to update list of games!");
                 }
@@ -144,23 +165,27 @@ public class Game {
                 }
                 break;
             case "play":
-                setVariable(scanner, "playerColor");
-                setVariable(scanner, "number");
-                gameIndex = Integer.parseInt(inputs.get("number"));
                 try {
+                    setVariable(scanner, "playerColor");
+                    setVariable(scanner, "number");
+                    gameIndex = Integer.parseInt(inputs.get("number"));
                     currentGame = games.get(gameIndex - 1);
                     server.joinGame(authToken, inputs.get("playerColor"), currentGame.gameID());
                     System.out.println("Joined game!");
                     currentFunction = (Scanner) -> gameplay(scanner);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     System.out.println("Join game failed!");
                 }
                 break;
             case "observe":
-                setVariable(scanner, "number");
-                gameIndex = Integer.parseInt(inputs.get("number"));
-                currentGame = games.get(gameIndex - 1);
-                currentFunction = (Scanner) -> gameplay(scanner);
+                try {
+                    setVariable(scanner, "number");
+                    gameIndex = Integer.parseInt(inputs.get("number"));
+                    currentGame = games.get(gameIndex - 1);
+                    currentFunction = (Scanner) -> gameplay(scanner);
+                } catch (Exception e) {
+                    System.out.println("Invalid input!");
+                }
                 break;
             default:
                 System.out.println("Command not available. Type `help` for available commands.");

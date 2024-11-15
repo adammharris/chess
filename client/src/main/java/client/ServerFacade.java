@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import model.GameData;
 import model.UserData;
-import server.Server;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -15,8 +14,8 @@ import java.nio.charset.StandardCharsets;
 
 
 public class ServerFacade {
+    private static int port = 8080;
     private static final Gson gson = new Gson();
-    private static final Server server = new Server();
     private record JoinRequest(String playerColor, int gameID) {}
     private record Empty() {}
     private record RegisterResponse(String user, String authToken) {}
@@ -25,16 +24,8 @@ public class ServerFacade {
     private record CreateRequest(String gameName) {}
     private record Messenger(String message) {}
 
-    public ServerFacade() {
-        try {
-            server.run(8080);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void stop() {
-        server.stop();
+    public ServerFacade(int portNumber) {
+        port = portNumber;
     }
 
     private String inputStreamToString(InputStream is) throws IOException {
@@ -50,7 +41,7 @@ public class ServerFacade {
     private URL getURL(String urlPath) throws IOException {
         URL url;
         try {
-            url = new URI("http://localhost:%s/%s".formatted(8080, urlPath)).toURL();
+            url = new URI("http://localhost:%s/%s".formatted(port, urlPath)).toURL();
         } catch (URISyntaxException e) {
             throw new IOException(e);
         }
@@ -69,13 +60,6 @@ public class ServerFacade {
         }
         connection.connect();
         return connection;
-    }
-
-    private <T> T getRequest(String urlPath, String authToken, Class<T> Response) throws IOException {
-        URL url = getURL(urlPath);
-        HttpURLConnection connection = getConnection(url, "GET", authToken);
-        InputStream responseBody = connection.getInputStream();
-        return gson.fromJson(inputStreamToString(responseBody), Response);
     }
 
     private <S, T> T postRequest(String urlPath, String authToken, S Request, Class<T> Response) throws IOException {
@@ -109,7 +93,11 @@ public class ServerFacade {
     }
 
     public GameData[] listGames(String authToken) throws IOException {
-        ListRequest games = getRequest("game", authToken, ListRequest.class);
+        URL url = getURL("game");
+        HttpURLConnection connection = getConnection(url, "GET", authToken);
+        InputStream responseBody = connection.getInputStream();
+        ListRequest games = gson.fromJson(inputStreamToString(responseBody), ListRequest.class);
+        //ListRequest games = getRequest("game", authToken, ListRequest.class);
         return games.games();
     }
 
@@ -135,15 +123,5 @@ public class ServerFacade {
 
     public void logout(String authToken) throws IOException {
         postRequest("session", authToken, new Empty(), Empty.class, "DELETE");
-    }
-
-    public GameData getGame(String authToken, int gameID) throws IOException {
-        GameData[] games = listGames(authToken);
-        for (GameData game : games) {
-            if (game.gameID() == gameID) {
-                return game;
-            }
-        }
-        throw new IOException("Game not found");
     }
 }
