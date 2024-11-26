@@ -197,6 +197,12 @@ public class Game {
         if (currentGame == null) {
             throw new RuntimeException("`Game::gameplay` called, but there is no game!");
         }
+        try {
+            server.setupWebsocket();
+            server.sendMessage("Websocket connected!");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         System.out.println(TextGraphics.constructBoard(currentGame.game().getBoard(), false));
         System.out.println(TextGraphics.constructBoard(currentGame.game().getBoard(), true));
         currentFunction = (scan) -> postlogin(scanner);

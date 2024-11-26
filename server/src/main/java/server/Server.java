@@ -1,6 +1,5 @@
 package server;
 
-import dataaccess.DatabaseManager;
 import service.ClearHandler;
 import service.GameHandler;
 import service.LoginHandler;
@@ -14,6 +13,8 @@ public class Server {
 
         Spark.staticFiles.location("web");
 
+        Spark.webSocket("/ws", WSServer.class);
+
         // Register your endpoints and handle exceptions here.
         Spark.post("/user", new RegisterHandler()::register);
         Spark.post("/session", new LoginHandler()::login);
@@ -22,9 +23,7 @@ public class Server {
         Spark.post("/game", new GameHandler()::create);
         Spark.put("/game", new GameHandler()::join);
         Spark.delete("/db", new ClearHandler()::clear);
-
-        //This line initializes the server and can be removed once you have a functioning endpoint 
-        Spark.init();
+        Spark.get("/echo/:msg", (req, res) -> "HTTP response: " + req.params(":msg"));
 
         Spark.awaitInitialization();
         return Spark.port();

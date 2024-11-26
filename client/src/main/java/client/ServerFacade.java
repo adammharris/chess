@@ -24,6 +24,12 @@ public class ServerFacade {
     private record CreateRequest(String gameName) {}
     private record Messenger(String message) {}
 
+    private WSClient websocket;
+
+    public void setupWebsocket() throws Exception {
+        websocket = new WSClient();
+    }
+
     public ServerFacade(int portNumber) {
         port = portNumber;
     }
@@ -130,5 +136,9 @@ public class ServerFacade {
 
     public void clear() throws IOException {
         postRequest("db", "", new Empty(), Empty.class, "DELETE");
+    }
+
+    public void sendMessage(String message) throws Exception {
+        websocket.send(message);
     }
 }
