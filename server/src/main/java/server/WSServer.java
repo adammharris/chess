@@ -37,7 +37,10 @@ public class WSServer {
     public void onMessage(Session session, String message) {
         try {
             UserGameCommand command = SERIALIZER.fromJson(message, UserGameCommand.class);
-            String username = getUsername(command.getAuthToken());
+            String username = getUsername(session.getRemote(), command.getAuthToken());
+            if (username == null) {
+                return;
+            }
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, SERIALIZER.fromJson(message, ConnectCommand.class));
                 case MAKE_MOVE -> move(session, username, SERIALIZER.fromJson(message, MakeMoveCommand.class));
@@ -52,11 +55,12 @@ public class WSServer {
         //session.getRemote().sendString("WebSocket response: " + message);
     }
 
-    private String getUsername(String authToken) {
+    private String getUsername(RemoteEndpoint client, String authToken) {
         try {
             return AUTH_DAO.getUsername(authToken);
         } catch (DataAccessException e) {
-            throw new RuntimeException(e);
+            sendMessage(client, new ErrorMessage("Error: invalid user"));
+            return null;
         }
     }
 
@@ -206,6 +210,31 @@ public class WSServer {
             sendMessage(session.getRemote(), new ErrorMessage("Error: invalid move"));
             return;
         }
+        ConnectCommand.CONNECTION_TYPE connectionType = getConnectionType(command.getGameID(), command.getAuthToken());
+        ChessGame.TeamColor color;
+        if (connectionType == ConnectCommand.CONNECTION_TYPE.WHITE) {
+            color = ChessGame.TeamColor.BLACK;
+        } else {
+            color = ChessGame.TeamColor.WHITE;
+        }
+        boolean isWhite = false;
+        boolean isBlack = false;
+        GameClients allClients = ALL_CLIENTS.get(command.getGameID());
+        if (allClients.white.authToken.equals(command.getAuthToken())) {
+            isWhite = true;
+        }
+        if (allClients.black.authToken.equals(command.getAuthToken())) {
+            isBlack = true;
+        }
+        if (isWhite && connectionType != ConnectCommand.CONNECTION_TYPE.WHITE) {
+            sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + "is white, but tried to move someone else's piece"));
+        }
+        if (isBlack && connectionType != ConnectCommand.CONNECTION_TYPE.BLACK) {
+            sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + "is black, but tried to move someone else's piece"));
+        }
+        if (!(isBlack || isWhite) || connectionType == ConnectCommand.CONNECTION_TYPE.OBSERVER) {
+            sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + " tried to move, but is an observer"));
+        }
 
         // Game is updated to represent move
         GameData updatedGame = new GameData(currentGame.gameID(), currentGame.whiteUsername(), currentGame.blackUsername(), currentGame.gameName(), chessGame);
@@ -227,16 +256,10 @@ public class WSServer {
                 command.getMove().getStartPosition(),
                 command.getMove().getEndPosition()
         );
-        sendMessageAll(command.getGameID(), new NotificationMessage(message), "");
+        sendMessageAll(command.getGameID(), new NotificationMessage(message), command.getAuthToken());
 
         // If the move results in check, checkmate, or stalemate, the server sends a notification to all clients
-        ConnectCommand.CONNECTION_TYPE connectionType = getConnectionType(command.getGameID(), command.getAuthToken());
-        ChessGame.TeamColor color;
-        if (connectionType == ConnectCommand.CONNECTION_TYPE.WHITE) {
-            color = ChessGame.TeamColor.BLACK;
-        } else {
-            color = ChessGame.TeamColor.WHITE;
-        }
+
         if (updatedGame.game().isInCheckmate(color)) {
             sendMessageAll(command.getGameID(), new NotificationMessage("Checkmate! " + username + " has won the game!"), "");
         } else if (updatedGame.game().isInStalemate(color)) {
