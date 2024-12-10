@@ -22,6 +22,7 @@ import websocket.messages.ServerMessage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 @WebSocket
 public class WSServer {
@@ -32,6 +33,7 @@ public class WSServer {
     record Client(String authToken, RemoteEndpoint client) {}
     record GameClients(Client white, Client black, ArrayList<Client> observers) {}
     private final HashMap<Integer, GameClients> ALL_CLIENTS = new HashMap<>();
+    private final HashSet<Integer> GAMES_ENDED = new HashSet<>();
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
@@ -198,6 +200,9 @@ public class WSServer {
      * @param command command with type MAKE_MOVE
      */
     private void move(Session session, String username, MakeMoveCommand command) {
+        if (GAMES_ENDED.contains(command.getGameID())) {
+            sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + " attempted to move after game ended"));
+        }
         // Server verifies validity of the move
         GameData currentGame = getGame(session.getRemote(), command.getGameID());
         if (currentGame == null) {
@@ -226,13 +231,13 @@ public class WSServer {
         if (allClients.black.authToken.equals(command.getAuthToken())) {
             isBlack = true;
         }
-        if (isWhite && connectionType != ConnectCommand.CONNECTION_TYPE.WHITE) {
+        if (isWhite && (connectionType != ConnectCommand.CONNECTION_TYPE.WHITE || chessGame.getBoard().getPiece(command.getMove().getEndPosition()).getTeamColor() != ChessGame.TeamColor.WHITE)) {
             sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + "is white, but tried to move someone else's piece"));
         }
-        if (isBlack && connectionType != ConnectCommand.CONNECTION_TYPE.BLACK) {
+        if (isBlack && (connectionType != ConnectCommand.CONNECTION_TYPE.BLACK || chessGame.getBoard().getPiece(command.getMove().getEndPosition()).getTeamColor() != ChessGame.TeamColor.BLACK)) {
             sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + "is black, but tried to move someone else's piece"));
         }
-        if (!(isBlack || isWhite) || connectionType == ConnectCommand.CONNECTION_TYPE.OBSERVER) {
+        if (connectionType == ConnectCommand.CONNECTION_TYPE.OBSERVER) {
             sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + " tried to move, but is an observer"));
         }
 
@@ -301,11 +306,16 @@ public class WSServer {
     }
 
     private void resign(Session session, String username, UserGameCommand command) {
+        if (getConnectionType(command.getGameID(), command.getAuthToken()) == ConnectCommand.CONNECTION_TYPE.OBSERVER) {
+            sendMessage(session.getRemote(), new ErrorMessage("Error: observer attempted to resign"));
+            return;
+        }
+        if (GAMES_ENDED.contains(command.getGameID())) {
+            sendMessage(session.getRemote(), new ErrorMessage("Error: attempted to resign after game ended"));
+            return;
+        }
+        GAMES_ENDED.add(command.getGameID());
 
-        //TODO implement resign
-        // Server marks game as over
-
-        NotificationMessage gameOver = new NotificationMessage(username + " resigned");
-        sendMessage(session.getRemote(), gameOver);
+        sendMessageAll(command.getGameID(), new NotificationMessage(username + " resigned."), "");
     }
 }
