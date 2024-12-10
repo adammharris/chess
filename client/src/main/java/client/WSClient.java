@@ -2,6 +2,7 @@ package client;
 
 import chess.ChessMove;
 import com.google.gson.Gson;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 
 import javax.websocket.*;
@@ -19,38 +20,29 @@ public class WSClient extends Endpoint {
         this.session.addMessageHandler((MessageHandler.Whole<String>) System.out::println);
     }
 
-    public void send(String msg) throws Exception {
-        this.session.getBasicRemote().sendText(msg);
+    public void send(UserGameCommand command) {
+        try {
+            this.session.getBasicRemote().sendText(SERIALIZER.toJson(command));
+        } catch (IOException e) {
+            System.out.println("Sending command " + command + " failed!");
+        }
     }
 
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
     public void move(String authToken, ChessMove move, int gameID) {
-        //TODO implement move
-        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID);
-        try {
-            this.session.getBasicRemote().sendText(SERIALIZER.toJson(command));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        MakeMoveCommand command = new MakeMoveCommand(authToken, gameID, move);
+        send(command);
     }
 
     public void leave(String authToken, int gameID) {
         UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
-        try {
-            this.session.getBasicRemote().sendText(SERIALIZER.toJson(command));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        send(command);
     }
 
     public void resign(String authToken, int gameID) {
         UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
-        try {
-            this.session.getBasicRemote().sendText(SERIALIZER.toJson(command));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        send(command);
     }
 }

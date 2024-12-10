@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import model.GameData;
 import model.UserData;
+import websocket.commands.ConnectCommand;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -30,7 +31,7 @@ public class ServerFacade {
     public void setupWebsocket() throws Exception {
         if (websocket == null) {
             websocket = new WSClient();
-            sendMessage("Websocket activated!");
+            //sendMessage("Websocket activated!");
         }
     }
 
@@ -131,6 +132,17 @@ public class ServerFacade {
 
     public void joinGame(String authToken, String playerColor, int gameID) throws IOException {
         postRequest("game", authToken, new JoinRequest(playerColor, gameID), Empty.class, "PUT");
+        ConnectCommand.CONNECTION_TYPE connectionType;
+        if (playerColor.equals("WHITE")) {
+            connectionType = ConnectCommand.CONNECTION_TYPE.WHITE;
+        } else {
+            connectionType = ConnectCommand.CONNECTION_TYPE.BLACK;
+        }
+        connect(authToken, connectionType, gameID);
+    }
+
+    public void observeGame(String authToken, int gameID) {
+        connect(authToken, ConnectCommand.CONNECTION_TYPE.OBSERVER, gameID);
     }
 
     public void logout(String authToken) throws IOException {
@@ -139,10 +151,6 @@ public class ServerFacade {
 
     public void clear() throws IOException {
         postRequest("db", "", new Empty(), Empty.class, "DELETE");
-    }
-
-    public void sendMessage(String message) throws Exception {
-        websocket.send(message);
     }
 
     public void leave(String authToken, int gameID) {
@@ -155,5 +163,10 @@ public class ServerFacade {
 
     public void move(String authToken, ChessMove move, int gameID ) {
         websocket.move(authToken, move, gameID);
+    }
+
+    private void connect(String authToken, ConnectCommand.CONNECTION_TYPE connectionType, int gameID) {
+        ConnectCommand command = new ConnectCommand(authToken, gameID, connectionType);
+        websocket.send(command);
     }
 }
