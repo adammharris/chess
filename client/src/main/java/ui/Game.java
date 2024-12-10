@@ -165,6 +165,7 @@ public class Game {
                     System.out.println("Joined game!");
                     currentFunction = (scan) -> gameplay(scanner);
                 } catch (Exception e) {
+                    //System.out.println(e.getMessage());
                     System.out.println("Join game failed!");
                 }
                 break;

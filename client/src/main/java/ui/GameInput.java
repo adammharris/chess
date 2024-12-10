@@ -99,7 +99,8 @@ public class GameInput {
             System.out.printf("%s - %s\n", i, list[i-1]);
         }
         int inputNum = getNumber(scanner, list.length);
-        return list[inputNum];
+        //System.out.printf("Picked `%s`\n", list[inputNum]);
+        return list[inputNum - 1];
     }
 
     public static GameData getGame(Scanner scanner, GameData[] games) throws IOException {

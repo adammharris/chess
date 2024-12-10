@@ -40,7 +40,7 @@ public class TextGraphics {
         StringBuilder sb = new StringBuilder();
         String verticalBorder;
         String horizontalBorder;
-        if (orientedToWhite) {
+        if (!orientedToWhite) {
             verticalBorder = VERTICAL_BORDER;
             sb.append(HORIZONTAL_BORDER);
             sb.reverse();
@@ -78,7 +78,7 @@ public class TextGraphics {
             }
             ChessPiece thisPiece;
             col = 9 - col;
-            if (orientedToWhite) {
+            if (!orientedToWhite) {
                 thisPiece = board.getPiece(new ChessPosition(9 - row, 9 - col));
             } else {
                 thisPiece = board.getPiece(new ChessPosition(row, col));
