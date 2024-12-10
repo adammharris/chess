@@ -28,7 +28,10 @@ public class ServerFacade {
     private WSClient websocket;
 
     public void setupWebsocket() throws Exception {
-        websocket = new WSClient();
+        if (websocket == null) {
+            websocket = new WSClient();
+            sendMessage("Websocket activated!");
+        }
     }
 
     public ServerFacade(int portNumber) {
@@ -83,7 +86,6 @@ public class ServerFacade {
                 requestBody.write(userJson.getBytes());
             }
         }
-
 
         // Get response
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
@@ -143,15 +145,15 @@ public class ServerFacade {
         websocket.send(message);
     }
 
-    public void leave(String authToken) {
-        websocket.leave(authToken);
+    public void leave(String authToken, int gameID) {
+        websocket.leave(authToken, gameID);
     }
 
-    public void resign(String authToken) {
-        websocket.resign(authToken);
+    public void resign(String authToken, int gameID) {
+        websocket.resign(authToken, gameID);
     }
 
-    public void move(String authToken, ChessMove move) {
-        websocket.move(authToken, move);
+    public void move(String authToken, ChessMove move, int gameID ) {
+        websocket.move(authToken, move, gameID);
     }
 }

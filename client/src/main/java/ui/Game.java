@@ -189,7 +189,7 @@ public class Game {
         }
         try {
             server.setupWebsocket();
-            server.sendMessage("Websocket connected!");
+            //server.sendMessage("Websocket connected!");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -216,18 +216,24 @@ public class Game {
                 System.out.print(TextGraphics.constructBoard(currentGame.game().getBoard(), orientedToWhite));
                 break;
             case "leave":
-                server.leave(authToken);
+                server.leave(authToken, currentGame.gameID());
                 System.out.println("Left game!");
                 currentFunction = (Scanner) -> postlogin(scanner);
                 break;
             case "move":
-                ChessPosition startPosition = null;
-                ChessPosition endPosition = null;
+                ChessPosition startPosition;
+                ChessPosition endPosition;
+                ChessPiece piece;
                 try {
                     System.out.println("Which piece would you like to move?");
                     startPosition = GameInput.getChessPosition(scanner);
+                    piece = currentGame.game().getBoard().getPiece(startPosition);
+                    if (piece == null) {
+                        throw new IOException("Piece not found!");
+                    }
                 } catch (IOException e) {
-                    System.out.println("Invalid input!");
+                    System.out.println("There is no piece there!");
+                    break;
                 }
 
                 try {
@@ -235,10 +241,8 @@ public class Game {
                     endPosition = GameInput.getChessPosition(scanner);
                 } catch (IOException e) {
                     System.out.println("Invalid input!");
+                    break;
                 }
-
-
-                ChessPiece piece = currentGame.game().getBoard().getPiece(startPosition);
                 ChessPiece.PieceType pieceType = null;
                 if (piece.getPieceType() == ChessPiece.PieceType.PAWN
                         && ((piece.getTeamColor() == ChessGame.TeamColor.WHITE
@@ -260,14 +264,14 @@ public class Game {
                     move = new ChessMove(startPosition, endPosition);
                 }
 
-                server.move(authToken, move);
+                server.move(authToken, move, currentGame.gameID());
                 break;
             case "resign":
                 System.out.println("Are you sure you want to resign?");
                 try {
                     boolean isYes = GameInput.getBoolean(scanner);
                     if (isYes) {
-                        server.resign(authToken);
+                        server.resign(authToken, currentGame.gameID());
                         System.out.println("Resigned from game!");
                         currentGame = null;
                         currentFunction = (Scanner) -> postlogin(scanner);
