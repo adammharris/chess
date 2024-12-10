@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessMove;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import model.GameData;
@@ -140,5 +141,17 @@ public class ServerFacade {
 
     public void sendMessage(String message) throws Exception {
         websocket.send(message);
+    }
+
+    public void leave(String authToken) {
+        websocket.leave(authToken);
+    }
+
+    public void resign(String authToken) {
+        websocket.resign(authToken);
+    }
+
+    public void move(String authToken, ChessMove move) {
+        websocket.move(authToken, move);
     }
 }

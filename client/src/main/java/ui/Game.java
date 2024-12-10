@@ -1,23 +1,26 @@
 package ui;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import client.ServerFacade;
 import model.GameData;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class Game {
     private static ServerFacade server = null;
     private static boolean keepGoing = true;
     private static Consumer<Scanner> currentFunction;
-    private final static HashMap<String, String> INPUTS = new HashMap<>();
+
     private static String authToken = "";
     private final static ArrayList<GameData> GAMES = new ArrayList<>();
     private static GameData currentGame;
+    private static String currentUsername;
+    private static ChessGame.TeamColor currentColor;
 
     private static void refreshGames() throws IOException {
         GAMES.clear();
@@ -61,34 +64,20 @@ public class Game {
         }
     }
 
-    private static void setVariable(Scanner scanner, String key) throws IOException {
-        if (key.equals("playerColor")) {
-            System.out.print("Please enter player color (`WHITE` or `BLACK`): ");
-            INPUTS.put(key, scanner.next());
-            if (!(INPUTS.get("playerColor").equals("WHITE") || INPUTS.get("playerColor").equals("BLACK"))) {
-                throw new IOException("Invalid input! (Not a player color)");
-            }
-        } else if (key.equals("number")) {
-            System.out.printf("Please enter the number of the game (between 1 and %s): ", GAMES.size());
-            INPUTS.put(key, scanner.next());
-            try {
-                Integer.parseInt(INPUTS.get(key));
-            } catch (NumberFormatException e) {
-                throw new IOException(e);
-            }
-        } else {
-            System.out.printf("Please enter %s: ", key);
-            INPUTS.put(key, scanner.next());
-        }
-    }
+
 
     private static void register(Scanner scanner) {
         System.out.print("Time to register!\n");
         try {
-            setVariable(scanner, "username");
-            setVariable(scanner, "password");
-            setVariable(scanner, "email");
-            authToken = server.register(INPUTS.get("username"), INPUTS.get("password"), INPUTS.get("email"));
+            String username = GameInput.getString(scanner, "Please enter a username: ");
+            String password  = GameInput.getString(scanner, "Please enter a password: ");
+            String email = GameInput.getString(scanner, "Please enter an email: ");
+            String confirmPassword = GameInput.getString(scanner, "Great! Now just confirm your password: ");
+            if (!password.equals(confirmPassword)) {
+                throw new IOException("Passwords did not match!");
+            }
+            currentUsername = username;
+            authToken = server.register(currentUsername, password, email);
             currentFunction = (scan) -> postlogin(scanner);
         } catch (IOException e) {
             System.out.print("Invalid input! Please try again.\n");
@@ -99,9 +88,10 @@ public class Game {
     private static void login(Scanner scanner) {
         System.out.println("Time to login!");
         try {
-            setVariable(scanner, "username");
-            setVariable(scanner, "password");
-            authToken = server.login(INPUTS.get("username"), INPUTS.get("password"));
+            String username = GameInput.getString(scanner, "Please enter username: ");
+            currentUsername = username;
+            String password = GameInput.getString(scanner, "Please enter password: ");
+            authToken = server.login(username, password);
             System.out.println("Successfully logged in!");
             currentFunction = (scan) -> postlogin(scanner);
         } catch (IOException e) {
@@ -116,9 +106,8 @@ public class Game {
         } catch (IOException e) {
             System.out.println("Failed to login!");
         }
-        System.out.printf("[Logged in as %s] >>> ", INPUTS.get("username"));
+        System.out.printf("[Logged in as %s] >>> ", currentUsername);
         String input = scanner.next();
-        int gameIndex;
         switch (input) {
             case "help":
                 System.out.print("""
@@ -139,14 +128,15 @@ public class Game {
                     System.out.println("Logout failed!");
                 }
                 authToken = "";
+                currentUsername = null;
                 currentFunction = (scan) -> prelogin(scanner);
                 break;
             case "create":
                 try {
-                    setVariable(scanner, "gameName");
-                    server.createGame(authToken, INPUTS.get("gameName"));
+                    String gameName = GameInput.getGameName(scanner);
+                    server.createGame(authToken, gameName);
                     refreshGames();
-                    System.out.printf("Created game %s!\n", INPUTS.get("gameName"));
+                    System.out.printf("Created game %s!\n", gameName);
                 } catch (IOException e) {
                     System.out.println("Failed to create game!" + e.getMessage());
                 }
@@ -166,11 +156,12 @@ public class Game {
                 break;
             case "play":
                 try {
-                    setVariable(scanner, "playerColor");
-                    setVariable(scanner, "number");
-                    gameIndex = Integer.parseInt(INPUTS.get("number"));
-                    currentGame = GAMES.get(gameIndex - 1);
-                    server.joinGame(authToken, INPUTS.get("playerColor"), currentGame.gameID());
+                    currentGame = GameInput.getGame(scanner, GAMES.toArray(new GameData[0]));
+                    currentColor = GameInput.getColor(scanner);
+                    String colorString = (currentColor == ChessGame.TeamColor.WHITE) ? "WHITE" : "BLACK";
+                    System.out.println(colorString);
+
+                    server.joinGame(authToken, colorString, currentGame.gameID());
                     System.out.println("Joined game!");
                     currentFunction = (scan) -> gameplay(scanner);
                 } catch (Exception e) {
@@ -179,10 +170,8 @@ public class Game {
                 break;
             case "observe":
                 try {
-                    setVariable(scanner, "number");
-                    gameIndex = Integer.parseInt(INPUTS.get("number"));
-                    currentGame = GAMES.get(gameIndex - 1);
-                    currentFunction = (scan) -> gameplay(scanner);
+                    currentGame = GameInput.getGame(scanner, GAMES.toArray(new GameData[0]));
+                    currentFunction = (scan) -> observe(scanner);
                 } catch (Exception e) {
                     System.out.println("Invalid input!");
                 }
@@ -193,9 +182,9 @@ public class Game {
         }
     }
 
-    private static void gameplay(Scanner scanner) {
+    private static void setupWebsocket() {
         if (currentGame == null) {
-            throw new RuntimeException("`Game::gameplay` called, but there is no game!");
+            throw new RuntimeException("`Game::setupWebsocket` called, but there is no game!");
         }
         try {
             server.setupWebsocket();
@@ -203,8 +192,144 @@ public class Game {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        System.out.println(TextGraphics.constructBoard(currentGame.game().getBoard(), false));
-        System.out.println(TextGraphics.constructBoard(currentGame.game().getBoard(), true));
-        currentFunction = (scan) -> postlogin(scanner);
     }
+
+    private static void gameplay(Scanner scanner) {
+        setupWebsocket();
+        System.out.printf("[Playing game %s] >>> ", currentGame.gameName());
+        String input = scanner.next();
+        switch (input) {
+            case "help":
+                System.out.print("""
+                        Command\t\tDescription
+                        Help\t\tDisplays text informing the user what actions they can take.
+                        Draw\t\tRedraws the chess board
+                        Leave\t\tExit the game (you can join back in later)
+                        Move\t\tMove a chess piece
+                        Resign\t\tForfeit the game and exit
+                        Highlight\tPick a chess piece and highlight all the possible moves it can make
+                        """);
+                break;
+            case "draw":
+                boolean orientedToWhite = (currentColor == ChessGame.TeamColor.WHITE);
+                System.out.print(TextGraphics.constructBoard(currentGame.game().getBoard(), orientedToWhite));
+                break;
+            case "leave":
+                server.leave(authToken);
+                System.out.println("Left game!");
+                currentFunction = (Scanner) -> postlogin(scanner);
+                break;
+            case "move":
+                ChessPosition startPosition = null;
+                ChessPosition endPosition = null;
+                try {
+                    System.out.println("Which piece would you like to move?");
+                    startPosition = GameInput.getChessPosition(scanner);
+                } catch (IOException e) {
+                    System.out.println("Invalid input!");
+                }
+
+                try {
+                    System.out.println("Where would you like to move it?");
+                    endPosition = GameInput.getChessPosition(scanner);
+                } catch (IOException e) {
+                    System.out.println("Invalid input!");
+                }
+
+
+                ChessPiece piece = currentGame.game().getBoard().getPiece(startPosition);
+                ChessPiece.PieceType pieceType = null;
+                if (piece.getPieceType() == ChessPiece.PieceType.PAWN
+                        && ((piece.getTeamColor() == ChessGame.TeamColor.WHITE
+                        & Objects.requireNonNull(endPosition).getRow() == 8)
+                        ) || (piece.getTeamColor() == ChessGame.TeamColor.BLACK
+                        && Objects.requireNonNull(endPosition).getRow() == 1
+                    )) {
+                    try {
+                        System.out.println("Your pawn can be promoted!");
+                        pieceType = GameInput.getPromotion(scanner);
+                    } catch (IOException e) {
+                        System.out.println("Invalid promotion");
+                    }
+                }
+                ChessMove move;
+                if (pieceType != null) {
+                    move = new ChessMove(startPosition, endPosition, pieceType);
+                } else {
+                    move = new ChessMove(startPosition, endPosition);
+                }
+
+                server.move(authToken, move);
+                break;
+            case "resign":
+                System.out.println("Are you sure you want to resign?");
+                try {
+                    boolean isYes = GameInput.getBoolean(scanner);
+                    if (isYes) {
+                        server.resign(authToken);
+                        System.out.println("Resigned from game!");
+                        currentGame = null;
+                        currentFunction = (Scanner) -> postlogin(scanner);
+                    }
+                } catch (IOException e) {
+                    System.out.println("Invalid input!");
+                }
+                break;
+            case "highlight":
+                highlight(scanner);
+                break;
+            default:
+                System.out.println("Command not available. Type `help` for available commands.");
+                break;
+        }
+    }
+
+    private static void observe(Scanner scanner) {
+        setupWebsocket();
+        System.out.printf("[Observing game `%s`] >>> ", currentGame.gameName());
+        String input = scanner.next();
+        switch (input) {
+            case "help":
+                System.out.print("""
+                        Command\t\tDescription
+                        Help\t\tDisplays text informing the user what actions they can take.
+                        Draw\t\tRedraws the chess board
+                        Leave\t\tGoes back to the previous menu
+                        Highlight\tPick a chess piece and highlight all the possible moves it can make
+                        """);
+                break;
+            case "draw":
+                try {
+                    System.out.println("Please choose a side to view from.");
+                    ChessGame.TeamColor color = GameInput.getColor(scanner);
+                    boolean orientedToWhite = color == ChessGame.TeamColor.WHITE;
+                    System.out.print(TextGraphics.constructBoard(currentGame.game().getBoard(), orientedToWhite));
+                } catch (IOException e) {
+                    System.out.println("Invalid input!");
+                }
+                break;
+            case "leave":
+                System.out.printf("No longer observing `%s`\n", currentGame.gameName());
+                currentGame = null;
+                currentFunction = (Scanner) -> postlogin(scanner);
+                break;
+            case "highlight":
+                highlight(scanner);
+                break;
+        }
+    }
+
+    private static void highlight(Scanner scanner) {
+        System.out.println("What chess piece would you like to see valid moves for?");
+        ChessPosition position;
+        try {
+            position = GameInput.getChessPosition(scanner);
+        } catch (IOException e) {
+            System.out.println("Invalid input!");
+            return;
+        }
+        System.out.printf("Highlighted moves for chess piece %s:\n", position);
+        // TODO: draw highlighted moves
+    }
+
 }

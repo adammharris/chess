@@ -21,7 +21,7 @@ public class WSServer {
             //saveSession(command.getGameID(), session);
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, command);
-                case MAKE_MOVE -> makeMove(session, username, command);
+                case MAKE_MOVE -> move(session, username, command);
                 case LEAVE -> leave(session, username, command);
                 case RESIGN -> resign(session, username, command);
             }
@@ -49,8 +49,8 @@ public class WSServer {
         // TODO implement connect
     }
 
-    private void makeMove(Session session, String username, UserGameCommand command) {
-        //TODO implement makeMove
+    private void move(Session session, String username, UserGameCommand command) {
+        //TODO implement move
     }
 
     private void leave(Session session, String username, UserGameCommand command) {
