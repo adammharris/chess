@@ -67,13 +67,18 @@ public class WSServer {
 
     private ConnectCommand.CONNECTION_TYPE getConnectionType(int gameID, String authToken) {
         GameClients clients = ALL_CLIENTS.get(gameID);
-        if (clients.white.authToken.equals(authToken)) {
-            return ConnectCommand.CONNECTION_TYPE.WHITE;
-        } else if (clients.black.authToken.equals(authToken)) {
-            return ConnectCommand.CONNECTION_TYPE.BLACK;
+        if (clients.white() != null) {
+            if (clients.white().authToken().equals(authToken)) {
+                return ConnectCommand.CONNECTION_TYPE.WHITE;
+            }
         }
-        for (Client observer : clients.observers) {
-            if (observer.authToken.equals(authToken)) {
+        if (clients.black() != null) {
+            if (clients.black().authToken().equals(authToken)) {
+                return ConnectCommand.CONNECTION_TYPE.BLACK;
+            }
+        }
+        for (Client observer : clients.observers()) {
+            if (observer.authToken().equals(authToken)) {
                 return ConnectCommand.CONNECTION_TYPE.OBSERVER;
             }
         }
@@ -224,11 +229,15 @@ public class WSServer {
         boolean isWhite = false;
         boolean isBlack = false;
         GameClients allClients = ALL_CLIENTS.get(command.getGameID());
-        if (allClients.white.authToken.equals(command.getAuthToken())) {
-            isWhite = true;
+        if (allClients.white() != null) {
+            if (allClients.white.authToken.equals(command.getAuthToken())) {
+                isWhite = true;
+            }
         }
-        if (allClients.black.authToken.equals(command.getAuthToken())) {
-            isBlack = true;
+        if (allClients.black() != null) {
+            if (allClients.black.authToken.equals(command.getAuthToken())) {
+                isBlack = true;
+            }
         }
         if (isWhite && (connectionType != ConnectCommand.CONNECTION_TYPE.WHITE || chessGame.getBoard().getPiece(command.getMove().getEndPosition()).getTeamColor() != ChessGame.TeamColor.WHITE)) {
             sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + "is white, but tried to move someone else's piece"));
@@ -287,13 +296,17 @@ public class WSServer {
         if (previousGame == null) {
             return;
         }
-        GameData afterGame;
-        if (previousGame.whiteUsername().equals(username)) {
-            afterGame = new GameData(previousGame.gameID(), null, previousGame.blackUsername(), previousGame.gameName(), previousGame.game());
-        } else {
-            afterGame = new GameData(previousGame.gameID(), previousGame.whiteUsername(), null, previousGame.gameName(), previousGame.game());
+        String whiteUsername = previousGame.whiteUsername();
+        String blackUsername = previousGame.blackUsername();
+        ConnectCommand.CONNECTION_TYPE connectionType = getConnectionType(previousGame.gameID(), command.getAuthToken());
+        if (connectionType == ConnectCommand.CONNECTION_TYPE.WHITE) {
+            whiteUsername = "null";
+        } else if (connectionType == ConnectCommand.CONNECTION_TYPE.BLACK) {
+            blackUsername = "null";
         }
+        GameData afterGame = new GameData(previousGame.gameID(), whiteUsername, blackUsername, previousGame.gameName(), previousGame.game());
         try {
+            //GAME_DAO.
             GAME_DAO.updateGame(afterGame);
         } catch (DataAccessException e) {
             sendMessage(session.getRemote(), new ErrorMessage("Error: unable to update game"));
