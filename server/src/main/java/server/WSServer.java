@@ -20,7 +20,6 @@ import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -31,7 +30,7 @@ public class WSServer {
     static final SqlGameDAO GAME_DAO = SqlGameDAO.getInstance();
 
     record Client(String authToken, RemoteEndpoint client) {}
-    record GameClients(Client white, Client black, ArrayList<Client> observers) {}
+    record GameClients(Client white, Client black, HashSet<Client> observers) {}
     private final HashMap<Integer, GameClients> ALL_CLIENTS = new HashMap<>();
     private final HashSet<Integer> GAMES_ENDED = new HashSet<>();
 
@@ -146,7 +145,7 @@ public class WSServer {
         // Updates client database
         GameClients clients = ALL_CLIENTS.get(command.getGameID());
         if (clients == null) {
-            ALL_CLIENTS.put(command.getGameID(), new GameClients(null, null, new ArrayList<>()));
+            ALL_CLIENTS.put(command.getGameID(), new GameClients(null, null, new HashSet<>()));
             clients = ALL_CLIENTS.get(command.getGameID());
         }
         switch (command.getConnectionType()) {
@@ -300,6 +299,20 @@ public class WSServer {
             sendMessage(session.getRemote(), new ErrorMessage("Error: unable to update game"));
             return;
         }
+
+        GameClients clients = ALL_CLIENTS.get(command.getGameID());
+        if (clients.black() != null) {
+            if (command.getAuthToken().equals(clients.black().authToken())) {
+                clients = new GameClients(clients.white(), null, clients.observers());
+            }
+        }
+        if (clients.white() != null) {
+            if (command.getAuthToken().equals(clients.white().authToken())) {
+                clients = new GameClients(null, clients.black(), clients.observers());
+            }
+        }
+        clients.observers().removeIf(observer -> observer.authToken().equals(command.getAuthToken()));
+        ALL_CLIENTS.put(command.getGameID(), new GameClients(clients.white(), clients.black(), clients.observers()));
 
         // Notification sent to all players
         sendMessageAll(command.getGameID(), new NotificationMessage((username + " left the game")), command.getAuthToken());
