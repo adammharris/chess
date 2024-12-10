@@ -132,17 +132,17 @@ public class ServerFacade {
 
     public void joinGame(String authToken, String playerColor, int gameID) throws IOException {
         postRequest("game", authToken, new JoinRequest(playerColor, gameID), Empty.class, "PUT");
-        ConnectCommand.CONNECTION_TYPE connectionType;
+        ConnectCommand.ConnectionType connectionType;
         if (playerColor.equals("WHITE")) {
-            connectionType = ConnectCommand.CONNECTION_TYPE.WHITE;
+            connectionType = ConnectCommand.ConnectionType.WHITE;
         } else {
-            connectionType = ConnectCommand.CONNECTION_TYPE.BLACK;
+            connectionType = ConnectCommand.ConnectionType.BLACK;
         }
         connect(authToken, connectionType, gameID);
     }
 
     public void observeGame(String authToken, int gameID) {
-        connect(authToken, ConnectCommand.CONNECTION_TYPE.OBSERVER, gameID);
+        connect(authToken, ConnectCommand.ConnectionType.OBSERVER, gameID);
     }
 
     public void logout(String authToken) throws IOException {
@@ -165,7 +165,7 @@ public class ServerFacade {
         websocket.move(authToken, move, gameID);
     }
 
-    private void connect(String authToken, ConnectCommand.CONNECTION_TYPE connectionType, int gameID) {
+    private void connect(String authToken, ConnectCommand.ConnectionType connectionType, int gameID) {
         ConnectCommand command = new ConnectCommand(authToken, gameID, connectionType);
         websocket.send(command);
     }

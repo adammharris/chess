@@ -65,21 +65,21 @@ public class WSServer {
         }
     }
 
-    private ConnectCommand.CONNECTION_TYPE getConnectionType(int gameID, String authToken) {
+    private ConnectCommand.ConnectionType getConnectionType(int gameID, String authToken) {
         GameClients clients = ALL_CLIENTS.get(gameID);
         if (clients.white() != null) {
             if (clients.white().authToken().equals(authToken)) {
-                return ConnectCommand.CONNECTION_TYPE.WHITE;
+                return ConnectCommand.ConnectionType.WHITE;
             }
         }
         if (clients.black() != null) {
             if (clients.black().authToken().equals(authToken)) {
-                return ConnectCommand.CONNECTION_TYPE.BLACK;
+                return ConnectCommand.ConnectionType.BLACK;
             }
         }
         for (Client observer : clients.observers()) {
             if (observer.authToken().equals(authToken)) {
-                return ConnectCommand.CONNECTION_TYPE.OBSERVER;
+                return ConnectCommand.ConnectionType.OBSERVER;
             }
         }
         return null;
@@ -153,7 +153,7 @@ public class WSServer {
             ALL_CLIENTS.put(command.getGameID(), new GameClients(null, null, new HashSet<>()));
             clients = ALL_CLIENTS.get(command.getGameID());
         }
-        switch (command.getCONNECTION_TYPE()) {
+        switch (command.getConnectionType()) {
             case BLACK:
                 GameClients newBlack = new GameClients(clients.white, new Client(command.getAuthToken(), session.getRemote()), clients.observers);
                 ALL_CLIENTS.put(command.getGameID(), newBlack);
@@ -219,9 +219,9 @@ public class WSServer {
             sendMessage(session.getRemote(), new ErrorMessage("Error: invalid move"));
             return;
         }
-        ConnectCommand.CONNECTION_TYPE connectionType = getConnectionType(command.getGameID(), command.getAuthToken());
+        ConnectCommand.ConnectionType connectionType = getConnectionType(command.getGameID(), command.getAuthToken());
         ChessGame.TeamColor color;
-        if (connectionType == ConnectCommand.CONNECTION_TYPE.WHITE) {
+        if (connectionType == ConnectCommand.ConnectionType.WHITE) {
             color = ChessGame.TeamColor.BLACK;
         } else {
             color = ChessGame.TeamColor.WHITE;
@@ -240,17 +240,17 @@ public class WSServer {
             }
         }
         if (isWhite
-                && (connectionType != ConnectCommand.CONNECTION_TYPE.WHITE
+                && (connectionType != ConnectCommand.ConnectionType.WHITE
                 || chessGame.getBoard().getPiece(command.getMove().getEndPosition()).getTeamColor() != ChessGame.TeamColor.WHITE
         )) {
             sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + "is white, but tried to move someone else's piece"));
         }
         if (isBlack
-                && (connectionType != ConnectCommand.CONNECTION_TYPE.BLACK
+                && (connectionType != ConnectCommand.ConnectionType.BLACK
                 || chessGame.getBoard().getPiece(command.getMove().getEndPosition()).getTeamColor() != ChessGame.TeamColor.BLACK)) {
             sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + "is black, but tried to move someone else's piece"));
         }
-        if (connectionType == ConnectCommand.CONNECTION_TYPE.OBSERVER) {
+        if (connectionType == ConnectCommand.ConnectionType.OBSERVER) {
             sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + " tried to move, but is an observer"));
         }
 
@@ -310,10 +310,10 @@ public class WSServer {
         }
         String whiteUsername = previousGame.whiteUsername();
         String blackUsername = previousGame.blackUsername();
-        ConnectCommand.CONNECTION_TYPE connectionType = getConnectionType(previousGame.gameID(), command.getAuthToken());
-        if (connectionType == ConnectCommand.CONNECTION_TYPE.WHITE) {
+        ConnectCommand.ConnectionType connectionType = getConnectionType(previousGame.gameID(), command.getAuthToken());
+        if (connectionType == ConnectCommand.ConnectionType.WHITE) {
             whiteUsername = "null";
-        } else if (connectionType == ConnectCommand.CONNECTION_TYPE.BLACK) {
+        } else if (connectionType == ConnectCommand.ConnectionType.BLACK) {
             blackUsername = "null";
         }
         GameData afterGame = new GameData(
@@ -350,7 +350,7 @@ public class WSServer {
     }
 
     private void resign(Session session, String username, UserGameCommand command) {
-        if (getConnectionType(command.getGameID(), command.getAuthToken()) == ConnectCommand.CONNECTION_TYPE.OBSERVER) {
+        if (getConnectionType(command.getGameID(), command.getAuthToken()) == ConnectCommand.ConnectionType.OBSERVER) {
             sendMessage(session.getRemote(), new ErrorMessage("Error: observer attempted to resign"));
             return;
         }
