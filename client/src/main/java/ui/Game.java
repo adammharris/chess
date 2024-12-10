@@ -315,7 +315,6 @@ public class Game {
                         """);
                 break;
             case "draw":
-
                 try {
                     System.out.println("Please choose a side to view from.");
                     ChessGame.TeamColor color = GameInput.getColor(scanner);

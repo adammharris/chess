@@ -2,8 +2,13 @@ package client;
 
 import chess.ChessMove;
 import com.google.gson.Gson;
+import ui.TextGraphics;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -17,7 +22,34 @@ public class WSClient extends Endpoint {
         URI uri = new URI("ws://localhost:8080/ws");
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         this.session = container.connectToServer(this, uri);
-        this.session.addMessageHandler((MessageHandler.Whole<String>) System.out::println);
+        this.session.addMessageHandler((MessageHandler.Whole<String>) message -> {
+            //System.out.println(message);
+            ServerMessage serverMessage = SERIALIZER.fromJson(message, ServerMessage.class);
+            switch (serverMessage.getServerMessageType()) {
+                case ERROR:
+                    handleError(SERIALIZER.fromJson(message, ErrorMessage.class));
+                    break;
+                case LOAD_GAME:
+                    handleLoad(SERIALIZER.fromJson(message, LoadGameMessage.class));
+                    break;
+                case NOTIFICATION:
+                    handleNotification(SERIALIZER.fromJson(message, NotificationMessage.class));
+                    break;
+            }
+        });
+    }
+
+    private void handleError(ErrorMessage message) {
+        System.out.println(message.getErrorMessage());
+    }
+
+    private void handleLoad(LoadGameMessage message) {
+        //TODO: different orientations
+        System.out.println(TextGraphics.constructBoard(message.getGame().game().getBoard(), true));
+    }
+
+    private void handleNotification(NotificationMessage message) {
+        System.out.println(message.getMessage());
     }
 
     public void send(UserGameCommand command) {
@@ -25,6 +57,8 @@ public class WSClient extends Endpoint {
             this.session.getBasicRemote().sendText(SERIALIZER.toJson(command));
         } catch (IOException e) {
             System.out.println("Sending command " + command + " failed!");
+        } catch (IllegalStateException e) {
+            System.out.println("Unfortunately, the connection has closed! Please restart the game.");
         }
     }
 

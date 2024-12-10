@@ -4,6 +4,7 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import dataaccess.DataAccessException;
 import dataaccess.SqlAuthDAO;
 import dataaccess.SqlGameDAO;
@@ -33,23 +34,22 @@ public class WSServer {
     private final HashMap<Integer, GameClients> ALL_CLIENTS = new HashMap<>();
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message) throws Exception {
+    public void onMessage(Session session, String message) {
         try {
             UserGameCommand command = SERIALIZER.fromJson(message, UserGameCommand.class);
             String username = getUsername(command.getAuthToken());
-            //saveSession(command.getGameID(), session);
             switch (command.getCommandType()) {
-                case CONNECT -> connect(session, username, (ConnectCommand) command);
-                case MAKE_MOVE -> move(session, username, (MakeMoveCommand) command);
+                case CONNECT -> connect(session, username, SERIALIZER.fromJson(message, ConnectCommand.class));
+                case MAKE_MOVE -> move(session, username, SERIALIZER.fromJson(message, MakeMoveCommand.class));
                 case LEAVE -> leave(session, username, command);
                 case RESIGN -> resign(session, username, command);
             }
 
-        } catch (Exception e) {
-            sendMessage(session.getRemote(), new ServerMessage(ServerMessage.ServerMessageType.ERROR));
+        } catch (JsonSyntaxException e) {
+            sendMessage(session.getRemote(), new ErrorMessage("Invalid JSON: " + message));
         }
-        System.out.printf("Received: %s", message);
-        session.getRemote().sendString("WebSocket response: " + message);
+        //System.out.printf("Server received: %s", message);
+        //session.getRemote().sendString("WebSocket response: " + message);
     }
 
     private String getUsername(String authToken) {
@@ -85,19 +85,45 @@ public class WSServer {
     }
 
     private void sendMessage(RemoteEndpoint client, ServerMessage message) {
+        final String JSON;
         try {
-            client.sendString(SERIALIZER.toJson(message));
+            JSON = SERIALIZER.toJson(message);
+        } catch (JsonSyntaxException e) {
+            System.out.println("Invalid JSON: " + e.getMessage());
+            return;
+        }
+        try {
+            client.sendString(JSON);
+            if (message.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
+                System.out.println("Sent message of type " + message.getServerMessageType() + " to " + client);
+            } else {
+                System.out.println("Sent message of type " + message.getServerMessageType() + ": " + JSON);
+            }
+
         } catch (IOException e) {
-            System.out.println("Failed to send message: " + message);
+            System.out.println("Connection timed out: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Failed to send message: " + JSON);
         }
     }
 
-    private void sendMessageAll(int gameID, ServerMessage message) {
+    private void sendMessageAll(int gameID, ServerMessage message, String except) {
         GameClients allClients = ALL_CLIENTS.get(gameID);
-        sendMessage(allClients.black.client, message);
-        sendMessage(allClients.white.client, message);
+        if (allClients.black != null) {
+            if (!allClients.black.authToken.equals(except)) {
+                sendMessage(allClients.black.client, message);
+            }
+        }
+        if (allClients.white != null) {
+            if (!allClients.white.authToken.equals(except)) {
+                sendMessage(allClients.white.client, message);
+            }
+
+        }
         for (Client observer : allClients.observers) {
-            sendMessage(observer.client, message);
+            if (!observer.authToken.equals(except)) {
+                sendMessage(observer.client, message);
+            }
         }
     }
 
@@ -113,17 +139,32 @@ public class WSServer {
     private void connect(Session session, String username, ConnectCommand command) {
         // Updates client database
         GameClients clients = ALL_CLIENTS.get(command.getGameID());
+        if (clients == null) {
+            ALL_CLIENTS.put(command.getGameID(), new GameClients(null, null, new ArrayList<>()));
+            clients = ALL_CLIENTS.get(command.getGameID());
+        }
         switch (command.getConnectionType()) {
             case BLACK:
                 GameClients newBlack = new GameClients(clients.white, new Client(command.getAuthToken(), session.getRemote()), clients.observers);
                 ALL_CLIENTS.put(command.getGameID(), newBlack);
                 break;
             case WHITE:
-                GameClients newWhite = new GameClients(clients.white, new Client(command.getAuthToken(), session.getRemote()), clients.observers);
+                GameClients newWhite = new GameClients(new Client(command.getAuthToken(), session.getRemote()), clients.black, clients.observers);
                 ALL_CLIENTS.put(command.getGameID(), newWhite);
                 break;
             case OBSERVER:
                 clients.observers.add(new Client(command.getAuthToken(), session.getRemote()));
+                break;
+            case null:
+                if (clients.white == null) {
+                    GameClients nw = new GameClients(new Client(command.getAuthToken(), session.getRemote()), clients.black, clients.observers);
+                    ALL_CLIENTS.put(command.getGameID(), nw);
+                } else if (clients.black == null) {
+                    GameClients nb = new GameClients(clients.white, new Client(command.getAuthToken(), session.getRemote()), clients.observers);
+                    ALL_CLIENTS.put(command.getGameID(), nb);
+                } else {
+                    clients.observers.add(new Client(command.getAuthToken(), session.getRemote()));
+                }
                 break;
         }
 
@@ -134,11 +175,12 @@ public class WSServer {
         }
         LoadGameMessage loaded = new LoadGameMessage(game);
         sendMessage(session.getRemote(), loaded);
+        //sendMessage(session.getRemote(), new NotificationMessage("Joined game!"));
 
         // Server sends a NOTIFICATION message to all other clients in that game
         String message = "Received " + command + " from " + username;
         NotificationMessage connected = new NotificationMessage(message);
-        sendMessageAll(command.getGameID(), connected);
+        sendMessageAll(command.getGameID(), connected, command.getAuthToken());
     }
 
     /**
@@ -175,7 +217,7 @@ public class WSServer {
         }
 
         // Server sends a LOAD_GAME message to all clients
-        sendMessageAll(command.getGameID(), new LoadGameMessage(updatedGame));
+        sendMessageAll(command.getGameID(), new LoadGameMessage(updatedGame), "");
 
         // Server sends a NOTIFICATION message to all clients informing them what move was made
         ChessBoard board = updatedGame.game().getBoard();
@@ -185,7 +227,7 @@ public class WSServer {
                 command.getMove().getStartPosition(),
                 command.getMove().getEndPosition()
         );
-        sendMessageAll(command.getGameID(), new NotificationMessage(message));
+        sendMessageAll(command.getGameID(), new NotificationMessage(message), "");
 
         // If the move results in check, checkmate, or stalemate, the server sends a notification to all clients
         ConnectCommand.CONNECTION_TYPE connectionType = getConnectionType(command.getGameID(), command.getAuthToken());
@@ -196,11 +238,11 @@ public class WSServer {
             color = ChessGame.TeamColor.WHITE;
         }
         if (updatedGame.game().isInCheckmate(color)) {
-            sendMessageAll(command.getGameID(), new NotificationMessage("Checkmate! " + username + " has won the game!"));
+            sendMessageAll(command.getGameID(), new NotificationMessage("Checkmate! " + username + " has won the game!"), "");
         } else if (updatedGame.game().isInStalemate(color)) {
-            sendMessageAll(command.getGameID(), new NotificationMessage(username + " has caused a stalemate! It is a draw!"));
+            sendMessageAll(command.getGameID(), new NotificationMessage(username + " has caused a stalemate! It is a draw!"), "");
         } else if (updatedGame.game().isInCheck(color)) {
-            sendMessageAll(command.getGameID(), new NotificationMessage("Check!")); //TODO: username of other player
+            sendMessageAll(command.getGameID(), new NotificationMessage("Check!"), ""); //TODO: username of other player
         }
     }
 
@@ -214,11 +256,8 @@ public class WSServer {
      */
     private void leave(Session session, String username, UserGameCommand command) {
         // Game is updated to remove client
-        GameData previousGame;
-        try {
-            previousGame = GAME_DAO.getGame(command.getGameID());
-        } catch (DataAccessException e) {
-            sendMessage(session.getRemote(), new ErrorMessage("Error: game not found"));
+        GameData previousGame = getGame(session.getRemote(), command.getGameID());
+        if (previousGame == null) {
             return;
         }
         GameData afterGame;
@@ -235,7 +274,7 @@ public class WSServer {
         }
 
         // Notification sent to all players
-        sendMessageAll(command.getGameID(), new NotificationMessage((username + " left the game")));
+        sendMessageAll(command.getGameID(), new NotificationMessage((username + " left the game")), command.getAuthToken());
     }
 
     private void resign(Session session, String username, UserGameCommand command) {
