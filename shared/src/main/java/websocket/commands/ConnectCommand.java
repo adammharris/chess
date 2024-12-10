@@ -6,12 +6,12 @@ public class ConnectCommand extends UserGameCommand {
         WHITE,
         BLACK
     }
-    private final CONNECTION_TYPE connectionType;
+    private final CONNECTION_TYPE CONNECTION_TYPE;
     public ConnectCommand(String authToken, Integer gameID, CONNECTION_TYPE connectionType) {
         super(CommandType.CONNECT, authToken, gameID);
-        this.connectionType = connectionType;
+        this.CONNECTION_TYPE = connectionType;
     }
-    public CONNECTION_TYPE getConnectionType() {
-        return connectionType;
+    public CONNECTION_TYPE getCONNECTION_TYPE() {
+        return CONNECTION_TYPE;
     }
 }

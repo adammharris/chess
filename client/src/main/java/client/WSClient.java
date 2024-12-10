@@ -44,7 +44,7 @@ public class WSClient extends Endpoint {
     }
 
     private void handleLoad(LoadGameMessage message) {
-        //TODO: different orientations
+        // different orientations?
         System.out.println(TextGraphics.constructBoard(message.getGame().game().getBoard(), true));
     }
 

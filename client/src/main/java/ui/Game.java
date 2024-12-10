@@ -17,7 +17,7 @@ public class Game {
     private static ServerFacade server = null;
     private static boolean keepGoing = true;
     private static Consumer<Scanner> currentFunction;
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger("global");
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("global");
 
     private static String authToken = "";
     private final static ArrayList<GameData> GAMES = new ArrayList<>();
@@ -128,7 +128,7 @@ public class Game {
                     server.logout(authToken);
                     System.out.println("Logged out!");
                 } catch (IOException e) {
-                    logger.log(new LogRecord(Level.ALL, e.getMessage()));
+                    LOGGER.log(new LogRecord(Level.ALL, e.getMessage()));
                     System.out.println("Logout failed!");
                 }
                 authToken = "";
@@ -142,7 +142,7 @@ public class Game {
                     refreshGames();
                     System.out.printf("Created game %s!\n", gameName);
                 } catch (IOException e) {
-                    logger.log(new LogRecord(Level.ALL, e.getMessage()));
+                    LOGGER.log(new LogRecord(Level.ALL, e.getMessage()));
                     System.out.println("Failed to create game!" + e.getMessage());
                 }
                 break;
@@ -171,7 +171,7 @@ public class Game {
                     System.out.println("Joined game!");
                     currentFunction = (scan) -> gameplay(scanner);
                 } catch (IOException e) {
-                    logger.log(Level.ALL, e.getMessage());
+                    LOGGER.log(Level.ALL, e.getMessage());
                     System.out.println("Join game failed!");
                 }
                 break;
@@ -182,7 +182,7 @@ public class Game {
                     server.observeGame(authToken, currentGame.gameID());
                     currentFunction = (scan) -> observe(scanner);
                 } catch (IOException e) {
-                    logger.log(new LogRecord(Level.ALL, e.getMessage()));
+                    LOGGER.log(new LogRecord(Level.ALL, e.getMessage()));
                     System.out.println("Invalid input!");
                 }
                 break;
@@ -226,7 +226,7 @@ public class Game {
             case "leave":
                 server.leave(authToken, currentGame.gameID());
                 System.out.println("Left game!");
-                currentFunction = (Scanner) -> postlogin(scanner);
+                currentFunction = (scan) -> postlogin(scanner);
                 break;
             case "move":
                 ChessPosition startPosition;
@@ -240,7 +240,7 @@ public class Game {
                         throw new IOException("Piece not found!");
                     }
                 } catch (IOException e) {
-                    logger.log(new LogRecord(Level.ALL, e.getMessage()));
+                    LOGGER.log(new LogRecord(Level.ALL, e.getMessage()));
                     System.out.println("There is no piece there!");
                     break;
                 }
@@ -249,7 +249,7 @@ public class Game {
                     System.out.println("Where would you like to move it?");
                     endPosition = GameInput.getChessPosition(scanner);
                 } catch (IOException e) {
-                    logger.log(new LogRecord(Level.ALL, e.getMessage()));
+                    LOGGER.log(new LogRecord(Level.ALL, e.getMessage()));
                     System.out.println("Invalid input!");
                     break;
                 }
@@ -264,7 +264,7 @@ public class Game {
                         System.out.println("Your pawn can be promoted!");
                         pieceType = GameInput.getPromotion(scanner);
                     } catch (IOException e) {
-                        logger.log(new LogRecord(Level.ALL, e.getMessage()));
+                        LOGGER.log(new LogRecord(Level.ALL, e.getMessage()));
                         System.out.println("Invalid promotion");
                     }
                 }
@@ -285,10 +285,10 @@ public class Game {
                         server.resign(authToken, currentGame.gameID());
                         System.out.println("Resigned from game!");
                         currentGame = null;
-                        currentFunction = (Scanner) -> postlogin(scanner);
+                        currentFunction = (scan) -> postlogin(scanner);
                     }
                 } catch (IOException e) {
-                    logger.log(new LogRecord(Level.ALL, e.getMessage()));
+                    LOGGER.log(new LogRecord(Level.ALL, e.getMessage()));
                     System.out.println("Invalid input!");
                 }
                 break;
@@ -321,7 +321,7 @@ public class Game {
                     boolean orientedToWhite = color == ChessGame.TeamColor.WHITE;
                     System.out.print(TextGraphics.constructBoard(currentGame.game().getBoard(), orientedToWhite));
                 } catch (IOException e) {
-                    logger.log(new LogRecord(Level.ALL, e.getMessage()));
+                    LOGGER.log(new LogRecord(Level.ALL, e.getMessage()));
                     System.out.println("Invalid input!");
                 }
                 break;
@@ -329,7 +329,7 @@ public class Game {
                 System.out.printf("No longer observing `%s`\n", currentGame.gameName());
                 server.leave(authToken, currentGame.gameID());
                 currentGame = null;
-                currentFunction = (Scanner) -> postlogin(scanner);
+                currentFunction = (scan) -> postlogin(scanner);
                 break;
             case "highlight":
                 highlight(scanner);
@@ -343,12 +343,12 @@ public class Game {
         try {
             position = GameInput.getChessPosition(scanner);
         } catch (IOException e) {
-            logger.log(new LogRecord(Level.ALL, e.getMessage()));
+            LOGGER.log(new LogRecord(Level.ALL, e.getMessage()));
             System.out.println("Invalid input!");
             return;
         }
         System.out.printf("Highlighted moves for chess piece %s:\n", position);
-        // TODO: draw highlighted moves
+        //  draw highlighted moves!!!
     }
 
 }

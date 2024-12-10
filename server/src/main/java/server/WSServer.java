@@ -25,14 +25,14 @@ import java.util.HashSet;
 
 @WebSocket
 public class WSServer {
-    static final Gson SERIALIZER = new Gson();
-    static final SqlAuthDAO AUTH_DAO = SqlAuthDAO.getInstance();
-    static final SqlGameDAO GAME_DAO = SqlGameDAO.getInstance();
+    private static final Gson SERIALIZER = new Gson();
+    private static final SqlAuthDAO AUTH_DAO = SqlAuthDAO.getInstance();
+    private static final SqlGameDAO GAME_DAO = SqlGameDAO.getInstance();
 
-    record Client(String authToken, RemoteEndpoint client) {}
-    record GameClients(Client white, Client black, HashSet<Client> observers) {}
-    private final HashMap<Integer, GameClients> ALL_CLIENTS = new HashMap<>();
-    private final HashSet<Integer> GAMES_ENDED = new HashSet<>();
+    private record Client(String authToken, RemoteEndpoint client) {}
+    private record GameClients(Client white, Client black, HashSet<Client> observers) {}
+    private final static HashMap<Integer, GameClients> ALL_CLIENTS = new HashMap<>();
+    private final static HashSet<Integer> GAMES_ENDED = new HashSet<>();
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
@@ -95,25 +95,25 @@ public class WSServer {
     }
 
     private void sendMessage(RemoteEndpoint client, ServerMessage message) {
-        final String JSON;
+        final String json;
         try {
-            JSON = SERIALIZER.toJson(message);
+            json = SERIALIZER.toJson(message);
         } catch (JsonSyntaxException e) {
-            System.out.println("Invalid JSON: " + e.getMessage());
+            System.out.println("Invalid json: " + e.getMessage());
             return;
         }
         try {
-            client.sendString(JSON);
+            client.sendString(json);
             if (message.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
                 System.out.println("Sent message of type " + message.getServerMessageType() + " to " + client);
             } else {
-                System.out.println("Sent message of type " + message.getServerMessageType() + ": " + JSON);
+                System.out.println("Sent message of type " + message.getServerMessageType() + ": " + json);
             }
 
         } catch (IOException e) {
             System.out.println("Connection timed out: " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Failed to send message: " + JSON);
+            System.out.println("Failed to send message: " + json);
         }
     }
 
@@ -153,7 +153,7 @@ public class WSServer {
             ALL_CLIENTS.put(command.getGameID(), new GameClients(null, null, new HashSet<>()));
             clients = ALL_CLIENTS.get(command.getGameID());
         }
-        switch (command.getConnectionType()) {
+        switch (command.getCONNECTION_TYPE()) {
             case BLACK:
                 GameClients newBlack = new GameClients(clients.white, new Client(command.getAuthToken(), session.getRemote()), clients.observers);
                 ALL_CLIENTS.put(command.getGameID(), newBlack);
@@ -239,10 +239,15 @@ public class WSServer {
                 isBlack = true;
             }
         }
-        if (isWhite && (connectionType != ConnectCommand.CONNECTION_TYPE.WHITE || chessGame.getBoard().getPiece(command.getMove().getEndPosition()).getTeamColor() != ChessGame.TeamColor.WHITE)) {
+        if (isWhite
+                && (connectionType != ConnectCommand.CONNECTION_TYPE.WHITE
+                || chessGame.getBoard().getPiece(command.getMove().getEndPosition()).getTeamColor() != ChessGame.TeamColor.WHITE
+        )) {
             sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + "is white, but tried to move someone else's piece"));
         }
-        if (isBlack && (connectionType != ConnectCommand.CONNECTION_TYPE.BLACK || chessGame.getBoard().getPiece(command.getMove().getEndPosition()).getTeamColor() != ChessGame.TeamColor.BLACK)) {
+        if (isBlack
+                && (connectionType != ConnectCommand.CONNECTION_TYPE.BLACK
+                || chessGame.getBoard().getPiece(command.getMove().getEndPosition()).getTeamColor() != ChessGame.TeamColor.BLACK)) {
             sendMessage(session.getRemote(), new ErrorMessage("Error: " + username + "is black, but tried to move someone else's piece"));
         }
         if (connectionType == ConnectCommand.CONNECTION_TYPE.OBSERVER) {
@@ -250,7 +255,13 @@ public class WSServer {
         }
 
         // Game is updated to represent move
-        GameData updatedGame = new GameData(currentGame.gameID(), currentGame.whiteUsername(), currentGame.blackUsername(), currentGame.gameName(), chessGame);
+        GameData updatedGame = new GameData(
+                currentGame.gameID(),
+                currentGame.whiteUsername(),
+                currentGame.blackUsername(),
+                currentGame.gameName(),
+                chessGame
+        );
         try {
             GAME_DAO.updateGame(updatedGame);
         } catch (DataAccessException e) {
@@ -278,14 +289,15 @@ public class WSServer {
         } else if (updatedGame.game().isInStalemate(color)) {
             sendMessageAll(command.getGameID(), new NotificationMessage(username + " has caused a stalemate! It is a draw!"), "");
         } else if (updatedGame.game().isInCheck(color)) {
-            sendMessageAll(command.getGameID(), new NotificationMessage("Check!"), ""); //TODO: username of other player
+            sendMessageAll(command.getGameID(), new NotificationMessage("Check!"), "");
         }
     }
 
     /**
      * leave
      * 1. If a player is leaving, then the game is updated to remove the root client. Game is updated in the database.
-     * 2. Server sends a Notification message to all other clients in that game informing them that the root client left. This applies to both players and observers.
+     * 2. Server sends a Notification message to all other clients in that game informing them that the root client left.
+     * This applies to both players and observers.
      * @param session connection to client
      * @param username username of client leaving
      * @param command command with type LEAVE
@@ -304,7 +316,13 @@ public class WSServer {
         } else if (connectionType == ConnectCommand.CONNECTION_TYPE.BLACK) {
             blackUsername = "null";
         }
-        GameData afterGame = new GameData(previousGame.gameID(), whiteUsername, blackUsername, previousGame.gameName(), previousGame.game());
+        GameData afterGame = new GameData(
+                previousGame.gameID(),
+                whiteUsername,
+                blackUsername,
+                previousGame.gameName(),
+                previousGame.game()
+        );
         try {
             //GAME_DAO.
             GAME_DAO.updateGame(afterGame);
