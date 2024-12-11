@@ -379,6 +379,7 @@ public class Game {
     public static void loadGame(GameData game) {
         ChessPosition[] highlights = {};
         loadGame(currentColor, highlights, game);
+        System.out.print(">>> ");
     }
     public static void loadGame(ChessGame.TeamColor color) {
         ChessPosition[] highlights = {};
