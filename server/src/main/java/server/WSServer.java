@@ -36,6 +36,7 @@ public class WSServer {
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
+        System.out.printf("Server received: %s", message);
         try {
             UserGameCommand command = SERIALIZER.fromJson(message, UserGameCommand.class);
             String username = getUsername(session.getRemote(), command.getAuthToken());
@@ -52,7 +53,6 @@ public class WSServer {
         } catch (JsonSyntaxException e) {
             sendMessage(session.getRemote(), new ErrorMessage("Invalid JSON: " + message));
         }
-        //System.out.printf("Server received: %s", message);
         //session.getRemote().sendString("WebSocket response: " + message);
     }
 
@@ -216,7 +216,7 @@ public class WSServer {
         try {
             chessGame.makeMove(command.getMove());
         } catch (InvalidMoveException e) {
-            sendMessage(session.getRemote(), new ErrorMessage("Error: invalid move"));
+            sendMessage(session.getRemote(), new ErrorMessage("Error: invalid move: " + e.getMessage()));
             return;
         }
         ConnectCommand.ConnectionType connectionType = getConnectionType(command.getGameID(), command.getAuthToken());

@@ -1,9 +1,6 @@
 package ui;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import client.ServerFacade;
 import model.GameData;
 
@@ -220,8 +217,8 @@ public class Game {
                         """);
                 break;
             case "draw":
-                boolean orientedToWhite = (currentColor == ChessGame.TeamColor.WHITE);
-                System.out.print(TextGraphics.constructBoard(currentGame.game().getBoard(), orientedToWhite));
+                loadGame();
+
                 break;
             case "leave":
                 server.leave(authToken, currentGame.gameID());
@@ -318,8 +315,7 @@ public class Game {
                 try {
                     System.out.println("Please choose a side to view from.");
                     ChessGame.TeamColor color = GameInput.getColor(scanner);
-                    boolean orientedToWhite = color == ChessGame.TeamColor.WHITE;
-                    System.out.print(TextGraphics.constructBoard(currentGame.game().getBoard(), orientedToWhite));
+                    loadGame(color);
                 } catch (IOException e) {
                     LOGGER.log(new LogRecord(Level.ALL, e.getMessage()));
                     System.out.println("Invalid input!");
@@ -349,6 +345,48 @@ public class Game {
         }
         System.out.printf("Highlighted moves for chess piece %s:\n", position);
         //  draw highlighted moves!!!
+        ChessPiece piece = currentGame.game().getBoard().getPiece(position);
+        ArrayList<ChessMove> highlighted_moves = new ArrayList<>(piece.pieceMoves(currentGame.game().getBoard(), position));
+        ArrayList<ChessPosition> highlights_list = new ArrayList<>();
+        for (ChessMove move: highlighted_moves) {
+            highlights_list.add(move.getEndPosition());
+        }
+        highlights_list.add(position);
+
+        ChessPosition[] highlights = new ChessPosition[highlights_list.size()];
+
+        if (currentColor == null) {
+            loadGame(piece.getTeamColor(), highlights_list.toArray(highlights));
+        } else {
+            loadGame(currentColor, highlights_list.toArray(highlights));
+        }
+
+    }
+
+    public static void loadGame(ChessGame.TeamColor color, ChessPosition[] highlights, GameData game) {
+        currentGame = game;
+        try {
+            refreshGames();
+        } catch (IOException e) {
+            System.out.println("Failed to load game!");
+        }
+        String printBoard = TextGraphics.constructBoard(game.game().getBoard(), color == ChessGame.TeamColor.WHITE, highlights);
+        System.out.println(printBoard);
+    }
+    public static void loadGame(ChessGame.TeamColor color, ChessPosition[] highlights) {
+        loadGame(color, highlights, currentGame);
+    }
+    public static void loadGame(GameData game) {
+        ChessPosition[] highlights = {};
+        loadGame(currentColor, highlights, game);
+    }
+    public static void loadGame(ChessGame.TeamColor color) {
+        ChessPosition[] highlights = {};
+        loadGame(color, highlights);
+    }
+    public static void loadGame() {
+        loadGame(currentColor);
+        System.out.print(">>> ");
     }
 
 }

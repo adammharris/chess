@@ -2,7 +2,7 @@ package client;
 
 import chess.ChessMove;
 import com.google.gson.Gson;
-import ui.TextGraphics;
+import ui.Game;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
@@ -22,19 +22,15 @@ public class WSClient extends Endpoint {
         URI uri = new URI("ws://localhost:8080/ws");
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         this.session = container.connectToServer(this, uri);
-        this.session.addMessageHandler((MessageHandler.Whole<String>) message -> {
-            //System.out.println(message);
-            ServerMessage serverMessage = SERIALIZER.fromJson(message, ServerMessage.class);
-            switch (serverMessage.getServerMessageType()) {
-                case ERROR:
-                    handleError(SERIALIZER.fromJson(message, ErrorMessage.class));
-                    break;
-                case LOAD_GAME:
-                    handleLoad(SERIALIZER.fromJson(message, LoadGameMessage.class));
-                    break;
-                case NOTIFICATION:
-                    handleNotification(SERIALIZER.fromJson(message, NotificationMessage.class));
-                    break;
+        this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+            public void onMessage(String message) {
+                ServerMessage serverMessage = SERIALIZER.fromJson(message, ServerMessage.class);
+                switch (serverMessage.getServerMessageType()) {
+                    case LOAD_GAME -> handleLoad(SERIALIZER.fromJson(message, LoadGameMessage.class));
+                    case ERROR -> handleError(SERIALIZER.fromJson(message, ErrorMessage.class));
+                    case NOTIFICATION -> handleNotification(SERIALIZER.fromJson(message, NotificationMessage.class));
+                    default -> System.out.println("Received unspecified message");
+                }
             }
         });
     }
@@ -44,8 +40,8 @@ public class WSClient extends Endpoint {
     }
 
     private void handleLoad(LoadGameMessage message) {
-        // different orientations?
-        System.out.println(TextGraphics.constructBoard(message.getGame().game().getBoard(), true));
+        System.out.println("Loading game!");
+        Game.loadGame(message.getGame());
     }
 
     private void handleNotification(NotificationMessage message) {
