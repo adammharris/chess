@@ -346,19 +346,19 @@ public class Game {
         System.out.printf("Highlighted moves for chess piece %s:\n", position);
         //  draw highlighted moves!!!
         ChessPiece piece = currentGame.game().getBoard().getPiece(position);
-        ArrayList<ChessMove> highlighted_moves = new ArrayList<>(piece.pieceMoves(currentGame.game().getBoard(), position));
-        ArrayList<ChessPosition> highlights_list = new ArrayList<>();
-        for (ChessMove move: highlighted_moves) {
-            highlights_list.add(move.getEndPosition());
+        ArrayList<ChessMove> highlightedMoves = new ArrayList<>(piece.pieceMoves(currentGame.game().getBoard(), position));
+        ArrayList<ChessPosition> highlightedList = new ArrayList<>();
+        for (ChessMove move: highlightedMoves) {
+            highlightedList.add(move.getEndPosition());
         }
-        highlights_list.add(position);
+        highlightedList.add(position);
 
-        ChessPosition[] highlights = new ChessPosition[highlights_list.size()];
+        ChessPosition[] highlights = new ChessPosition[highlightedList.size()];
 
         if (currentColor == null) {
-            loadGame(piece.getTeamColor(), highlights_list.toArray(highlights));
+            loadGame(piece.getTeamColor(), highlightedList.toArray(highlights));
         } else {
-            loadGame(currentColor, highlights_list.toArray(highlights));
+            loadGame(currentColor, highlightedList.toArray(highlights));
         }
 
     }
