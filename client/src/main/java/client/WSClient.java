@@ -31,6 +31,7 @@ public class WSClient extends Endpoint {
                     case NOTIFICATION -> handleNotification(SERIALIZER.fromJson(message, NotificationMessage.class));
                     default -> System.out.println("Received unspecified message");
                 }
+                System.out.print("\n>>> ");
             }
         });
     }

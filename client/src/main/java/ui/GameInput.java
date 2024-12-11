@@ -57,6 +57,8 @@ public class GameInput {
         } catch (NumberFormatException e) {
             throw new IOException("Invalid number/row: " + e);
         }
+        // Letter is col, Number is row
+        // A2 = col 2 row 1
         return new ChessPosition(row, col);
     }
 

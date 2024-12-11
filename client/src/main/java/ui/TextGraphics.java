@@ -112,7 +112,7 @@ public class TextGraphics {
             if (thisPiece == null) {
                 sb.append(EMPTY);
             } else {
-                if (thisPiece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                if (thisPiece.getTeamColor() != ChessGame.TeamColor.WHITE) {
                     sb.append(WHITE_PIECE_COLOR);
                 } else {
                     sb.append(BLACK_PIECE_COLOR);

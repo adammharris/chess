@@ -188,7 +188,17 @@ public class WSServer {
         //sendMessage(session.getRemote(), new NotificationMessage("Joined game!"));
 
         // Server sends a NOTIFICATION message to all other clients in that game
-        String message = "Received " + command + " from " + username;
+        String message;
+        ConnectCommand.ConnectionType connectionType = getConnectionType(command.getGameID(), command.getAuthToken());
+        if (connectionType != ConnectCommand.ConnectionType.OBSERVER) {
+            if (connectionType == ConnectCommand.ConnectionType.WHITE) {
+                message = username + " joined as white";
+            } else {
+                message = username + " joined as black";
+            }
+        } else {
+            message = username + " joined as observer";
+        }
         NotificationMessage connected = new NotificationMessage(message);
         sendMessageAll(command.getGameID(), connected, command.getAuthToken());
     }
@@ -216,7 +226,7 @@ public class WSServer {
         try {
             chessGame.makeMove(command.getMove());
         } catch (InvalidMoveException e) {
-            sendMessage(session.getRemote(), new ErrorMessage("Error: invalid move: " + e.getMessage()));
+            sendMessage(session.getRemote(), new ErrorMessage("\nError: invalid"));
             return;
         }
         ConnectCommand.ConnectionType connectionType = getConnectionType(command.getGameID(), command.getAuthToken());
@@ -238,6 +248,9 @@ public class WSServer {
             if (allClients.black.authToken.equals(command.getAuthToken())) {
                 isBlack = true;
             }
+        }
+        if (chessGame.getBoard().getPiece(command.getMove().getEndPosition()) == null) {
+            System.out.println("Piece at endPos is null");
         }
         if (isWhite
                 && (connectionType != ConnectCommand.ConnectionType.WHITE

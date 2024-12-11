@@ -271,6 +271,7 @@ public class Game {
                 } else {
                     move = new ChessMove(startPosition, endPosition);
                 }
+                //System.out.println(move);
 
                 server.move(authToken, move, currentGame.gameID());
                 break;
@@ -346,6 +347,10 @@ public class Game {
         System.out.printf("Highlighted moves for chess piece %s:\n", position);
         //  draw highlighted moves!!!
         ChessPiece piece = currentGame.game().getBoard().getPiece(position);
+        if (piece == null) {
+            System.out.println("There is no piece there!");
+            return;
+        }
         ArrayList<ChessMove> highlightedMoves = new ArrayList<>(piece.pieceMoves(currentGame.game().getBoard(), position));
         ArrayList<ChessPosition> highlightedList = new ArrayList<>();
         for (ChessMove move: highlightedMoves) {
@@ -379,7 +384,6 @@ public class Game {
     public static void loadGame(GameData game) {
         ChessPosition[] highlights = {};
         loadGame(currentColor, highlights, game);
-        System.out.print(">>> ");
     }
     public static void loadGame(ChessGame.TeamColor color) {
         ChessPosition[] highlights = {};
@@ -387,7 +391,6 @@ public class Game {
     }
     public static void loadGame() {
         loadGame(currentColor);
-        System.out.print(">>> ");
     }
 
 }
