@@ -74,6 +74,6 @@ public class WSClient extends Endpoint {
 
     public void resign(String authToken, int gameID) {
         UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
-        send(command);
+        send(command); //TODO: Adjust how Resign works
     }
 }

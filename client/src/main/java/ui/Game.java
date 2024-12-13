@@ -218,7 +218,6 @@ public class Game {
                 break;
             case "draw":
                 loadGame();
-
                 break;
             case "leave":
                 server.leave(authToken, currentGame.gameID());
@@ -302,6 +301,7 @@ public class Game {
     private static void observe(Scanner scanner) {
         System.out.printf("[Observing game `%s`] >>> ", currentGame.gameName());
         String input = scanner.next();
+        currentColor = ChessGame.TeamColor.WHITE;
         switch (input) {
             case "help":
                 System.out.print("""
@@ -313,14 +313,7 @@ public class Game {
                         """);
                 break;
             case "draw":
-                try {
-                    System.out.println("Please choose a side to view from.");
-                    ChessGame.TeamColor color = GameInput.getColor(scanner);
-                    loadGame(color);
-                } catch (IOException e) {
-                    LOGGER.log(new LogRecord(Level.ALL, e.getMessage()));
-                    System.out.println("Invalid input!");
-                }
+                loadGame();
                 break;
             case "leave":
                 System.out.printf("No longer observing `%s`\n", currentGame.gameName());
@@ -351,7 +344,7 @@ public class Game {
             System.out.println("There is no piece there!");
             return;
         }
-        ArrayList<ChessMove> highlightedMoves = new ArrayList<>(piece.pieceMoves(currentGame.game().getBoard(), position));
+        ArrayList<ChessMove> highlightedMoves = new ArrayList<>(currentGame.game().validMoves(position));
         ArrayList<ChessPosition> highlightedList = new ArrayList<>();
         for (ChessMove move: highlightedMoves) {
             highlightedList.add(move.getEndPosition());
@@ -382,6 +375,9 @@ public class Game {
         loadGame(color, highlights, currentGame);
     }
     public static void loadGame(GameData game) {
+        if (currentColor == null) {
+            currentColor = ChessGame.TeamColor.WHITE;
+        }
         ChessPosition[] highlights = {};
         loadGame(currentColor, highlights, game);
     }
@@ -390,6 +386,9 @@ public class Game {
         loadGame(color, highlights);
     }
     public static void loadGame() {
+        if (currentColor == null) {
+            currentColor = ChessGame.TeamColor.WHITE;
+        }
         loadGame(currentColor);
     }
 
